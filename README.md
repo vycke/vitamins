@@ -18,12 +18,12 @@ Vitamins is a smalls dependency free front-end library for working on your appli
 
 Performance is very important for your application, but more importantly, for your users. There exists many ways to improve the performance, but some helper functions can get you a long way. Vitamins comes with several of these functions.
 
-### `debounce` or `throttle`
+### `debounce(func: Function, delay: number)` or `throttle(func: Function, delay: number)`
 
 Sometimes you will find yourself in a situation where a partical function is being executed many times, but it is impacting performance. Take for instance live searching. On each change of the input in the searchbar, the results are updated. However, these results do not live in the front-end, but an API call has to be made. Or what do you thing about updating multiple canvas elements while dragging a different element. `Debounce` and `throttle` are here to save you. You can find a visualisation [here](http://demo.nimius.net/debounce_throttle/), and [here](https://css-tricks.com/debouncing-throttling-explained-examples/).
 
-- `debounce(func: Function, delay: number)`: the original function (`func`) is called after the caller has stopped calling the debounced function within a certain period of time (`delay`);
-- `throttle(func: Function, delay: number)`: the original function (`func`) be called at most once per specified period (`delay`).
+- `debounce`: the original function (`func`) is called after the caller has stopped calling the debounced function within a certain period of time (`delay`);
+- `throttle`: the original function (`func`) be called at most once per specified period (`delay`).
 
 ## Hooking up the error tracker to your framework
 
