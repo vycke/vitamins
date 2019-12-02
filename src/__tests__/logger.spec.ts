@@ -21,8 +21,13 @@ describe('logger', () => {
     process.env.NODE_ENV = 'development';
     logger('test', 'tag');
     expect(console.log).toHaveBeenCalledTimes(1);
+    logger('test', 'tag', 'test');
+    expect(console.log).toHaveBeenCalledTimes(2);
+    logger();
+    expect(console.log).toHaveBeenCalledTimes(3);
   });
-  it('test in development', () => {
+
+  it('test in non-develoment', () => {
     logger('test');
     expect(console.log).toHaveBeenCalledTimes(0);
   });

@@ -4,33 +4,33 @@ jest.useFakeTimers();
 
 it('debounce', () => {
   const mockFn = jest.fn((x) => x);
-  const fn = debounce(mockFn, 10);
+  const debounced = debounce(mockFn, 10);
 
-  fn();
+  debounced();
   expect(mockFn).not.toBeCalled();
   jest.advanceTimersByTime(10);
   expect(mockFn).toHaveBeenCalledTimes(1);
-  fn();
+  debounced();
   jest.advanceTimersByTime(5);
-  fn(10);
+  debounced(10);
   jest.advanceTimersByTime(5);
   expect(mockFn).toHaveBeenCalledTimes(1);
-  jest.advanceTimersByTime(5);
+  jest.advanceTimersByTime(10);
   expect(mockFn).toHaveBeenCalledTimes(2);
   expect(mockFn).toBeCalledWith(10);
 });
 
-it('test', () => {
+it('throttle', () => {
   const mockFn = jest.fn((x) => x);
-  const fn = throttle(mockFn, 10);
+  const throttled = throttle(mockFn, 10);
 
-  fn();
+  throttled();
   expect(mockFn).not.toBeCalled();
   jest.advanceTimersByTime(10);
   expect(mockFn).toHaveBeenCalledTimes(1);
-  fn();
+  throttled();
   jest.advanceTimersByTime(5);
-  fn(10);
+  throttled(10);
   jest.advanceTimersByTime(5);
   expect(mockFn).toHaveBeenCalledTimes(2);
   expect(mockFn).toBeCalledWith(10);

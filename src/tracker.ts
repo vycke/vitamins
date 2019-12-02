@@ -1,5 +1,6 @@
 import { BreadCrumb, TrackerConfig, Tracker, Node } from './types';
 import { environment, createNode, freeze } from './utils';
+import logger from './logger';
 
 const MAX_NUM_BREADCRUMBS = 20;
 const KEEP_ALIVE = 48;
@@ -23,6 +24,7 @@ export default function createTracker(config: TrackerConfig): Tracker {
   function addCrumb(crumb: BreadCrumb): void {
     if (_crumbs.length >= MAX_NUM_BREADCRUMBS) _crumbs.pop();
     const timestamp = new Date().toISOString();
+    logger(crumb.category, crumb.message);
     _crumbs.unshift({ timestamp, ...crumb });
   }
 
@@ -34,7 +36,7 @@ export default function createTracker(config: TrackerConfig): Tracker {
       node.breadcrumbs = _crumbs;
       _crumbs = [];
     }
-
+    logger('error', node.error.message);
     _logs.push(node);
   }
 
