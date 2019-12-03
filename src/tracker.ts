@@ -36,7 +36,7 @@ export default function createTracker(config: TrackerConfig): Tracker {
     if (_crumbs.length >= (config.numberOfCrumbs || MAX_NUM_BREADCRUMBS))
       _crumbs.pop();
     const timestamp = new Date().toISOString();
-    logger(category, message);
+    logger(category, message, meta);
     _crumbs.unshift({ timestamp, message, category, ...(meta && { meta }) });
   }
 
@@ -48,7 +48,7 @@ export default function createTracker(config: TrackerConfig): Tracker {
       node.breadcrumbs = _crumbs;
       _crumbs = [];
     }
-    logger('error', node.error.message);
+    logger('error', node.error.message, node.error.stack);
     _logs.push(node);
   }
 

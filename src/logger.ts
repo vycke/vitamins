@@ -1,6 +1,6 @@
-import { MetaDataType } from './types';
+import { Arg } from './types';
 
-export default function logger(tag = '', ...messages: MetaDataType[]): void {
+export default function logger(tag = '', ...messages: Arg[]): void {
   if (process.env.NODE_ENV === 'development')
     console.log(
       `%c[${new Date().toLocaleTimeString()}] ${tag.toUpperCase()}:`,
