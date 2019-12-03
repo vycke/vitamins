@@ -37,7 +37,7 @@ export default function createTracker(config: TrackerConfig): Tracker {
       _crumbs.pop();
     const timestamp = new Date().toISOString();
     logger(category, message, meta);
-    _crumbs.unshift({ timestamp, message, category, ...(meta && { meta }) });
+    _crumbs.unshift({ timestamp, message, category });
   }
 
   // function to create a new node for the logs and add it to the logs
@@ -49,7 +49,7 @@ export default function createTracker(config: TrackerConfig): Tracker {
       _crumbs = [];
     }
     logger('error', node.error.message, node.error.stack);
-    _logs.push(node);
+    _logs.unshift(node);
   }
 
   // Listener to window events for storing the logs

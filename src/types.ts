@@ -13,7 +13,6 @@ export type BreadCrumb = {
   category: string;
   message: string;
   timestamp?: string;
-  metadata?: HashMap<MetaDataType>;
 };
 
 export type TrackerConfig = {

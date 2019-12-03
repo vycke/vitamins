@@ -5,6 +5,6 @@ export default function logger(tag = '', ...messages: Arg[]): void {
     console.log(
       `%c[${new Date().toLocaleTimeString()}] ${tag.toUpperCase()}:`,
       'color: fuchsia',
-      ...messages
+      ...messages.filter((m) => m !== undefined)
     );
 }
