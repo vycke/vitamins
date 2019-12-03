@@ -6,13 +6,40 @@
 [![Minified size](https://img.shields.io/bundlephobia/min/vitamins?label=minified)](https://www.npmjs.com/package/vitamins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Vitamins is a smalls dependency free front-end library for working on your application health. It core features logging of front-end errors (looking at you, JavaScript), and have some helper-functions that can improve your performance.
+Vitamins is a smalls dependency free front-end library for working on your application health. It core features logging of front-end errors (looking at you, JavaScript), and have some helper-functions that can improve your performance. The tracker aloows you to log any error you want in a consistent way. This makes it possible to analyze errors and solve issues in a better way.
 
 ## Error tracking
 
-- Breadcrumbs
-- Sync with localstorage
-- Captures all errors and unhandled promise rejections
+The tracker even logs all errors and unhandled `Promise` rejections, by listening to `window` events. However, to get a full picture, we need to have the context of the user. What were his/her actions? You can achieve this by creating a trail of breadcrumbs in your code. These are small pieces of information stored in the tracker. When an error is logged, the entire trail is attached to that error and stored in the log.
+
+### Properties
+
+You initiate tracker by providing a `config` object to the `createTracker` function. The configuration should have a `version` and `namespace` indication. After a tracker is initiated, it has the following properties at its disposal:
+
+- `send(error: Error, tags: string[])`: sends a new error to the log;
+- `crumb(crumb: Crumb)`: adds a breadcrumb to the internal list. Whenever an error is logged, the list of breadcrumbs is added to the logs, as additional context. Each breadcrumb consists of a `timestamp`, `message` and `category`;
+- `clear()`: clears the current log and crumb lists;
+- `trail`: gives back the current trail of breadcumbs. A trail can have a maximum of 20 breadcrumbs;
+- `logs`: gives back the current list of logs.
+
+When you are in development mode (`process.env.NODE_ENV === 'development'`), every invoke of the `crumb` and `send` properties are logged in the console.
+
+### Example
+
+```js
+const tracker = createTracker({ version: '1.0', namespace: 'my-application' });
+
+tracker.crumb('/home', 'Navigation');
+console.log(tracker.trail); // [ { message: '/home', category: 'Navigation', timestamp: '...' } ]
+const error = new Error('page does not exist');
+tracker.send(error, ['UI', 'Navigation']);
+console.log(tracker.trail); // [ ]
+console.log(tracker.logs); // [ { error: error, breadcrumbs: [ { ... } ], ... } ]
+```
+
+### Sync with local storage
+
+By default, the log will be stored in the local storage, using your defined `namespace` and `version`. When the application loads, the entire log is retrieved and put in the tracker. Only records of the last 48 hours are kept here. The moment your leave the application, the entire log is saved in the local storage.
 
 ## Performance
 

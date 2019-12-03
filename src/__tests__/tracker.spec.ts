@@ -52,7 +52,7 @@ describe('sync with local storage', () => {
   afterEach(() => localStorage.removeItem('vitamins_test_1.0'));
 
   it('init', () => {
-    expect(tracker.crumbs).toEqual([]);
+    expect(tracker.trail).toEqual([]);
     expect(tracker.logs.length).toBe(1);
   });
 });
@@ -68,7 +68,7 @@ describe('window events', () => {
 
   it('add error and unload', () => {
     const error = new Error('test');
-    tracker.log(error);
+    tracker.send(error);
     window.dispatchEvent(new Event('beforeunload'));
     expect(
       JSON.parse(localStorage.getItem('vitamins_test_1.0') || '').length
@@ -101,64 +101,64 @@ describe('tracker features', () => {
   });
 
   it('init', () => {
-    expect(tracker.crumbs).toEqual([]);
+    expect(tracker.trail).toEqual([]);
     expect(tracker.logs).toEqual([]);
   });
 
   it('crumbs', () => {
-    tracker.crumb({ message: 'test crumb', category: 'UI' });
-    expect(tracker.crumbs.length).toBe(1);
-    tracker.crumb({ message: 'test crumb', category: 'Network' });
-    expect(tracker.crumbs.length).toBe(2);
+    tracker.crumb('test crumb', 'UI');
+    expect(tracker.trail.length).toBe(1);
+    tracker.crumb('test crumb', 'Network');
+    expect(tracker.trail.length).toBe(2);
   });
 
   it('error with no tags', () => {
-    tracker.crumb({ message: 'test crumb', category: 'UI' });
-    expect(tracker.crumbs.length).toBe(1);
+    tracker.crumb('test crumb', 'UI');
+    expect(tracker.trail.length).toBe(1);
     const error = new Error('test');
-    tracker.log(error);
-    expect(tracker.crumbs.length).toBe(0);
+    tracker.send(error);
+    expect(tracker.trail.length).toBe(0);
     expect(tracker.logs.length).toBe(1);
   });
 
   it('error with tags and crumbs', () => {
-    tracker.crumb({ message: 'test crumb', category: 'UI' });
-    expect(tracker.crumbs.length).toBe(1);
+    tracker.crumb('test crumb', 'UI');
+    expect(tracker.trail.length).toBe(1);
     const error = new Error('test');
-    tracker.log(error, ['UI']);
-    expect(tracker.crumbs.length).toBe(0);
+    tracker.send(error, ['UI']);
+    expect(tracker.trail.length).toBe(0);
     expect(tracker.logs.length).toBe(1);
     expect(tracker.search(['Network']).length).toBe(0);
     expect(tracker.search(['UI']).length).toBe(1);
     expect(tracker.logs[0].breadcrumbs.length).toBe(1);
-    tracker.log(error, ['Network']);
+    tracker.send(error, ['Network']);
     expect(tracker.search(['UI']).length).toBe(1);
     expect(tracker.search(['UI', 'Network']).length).toBe(2);
   });
 
   it('error without tags and crumbs', () => {
-    expect(tracker.crumbs.length).toBe(0);
+    expect(tracker.trail.length).toBe(0);
     expect(tracker.logs.length).toBe(0);
     const error = new Error('test');
-    tracker.log(error);
-    expect(tracker.crumbs.length).toBe(0);
+    tracker.send(error);
+    expect(tracker.trail.length).toBe(0);
     expect(tracker.logs.length).toBe(1);
     expect(tracker.search(['UI']).length).toBe(0);
   });
 
   it('too many crumbs', () => {
     for (let i = 0; i < 30; i++) {
-      tracker.crumb({ message: i.toString(), category: 'UI' });
-      if (i + 1 <= 20) expect(tracker.crumbs.length).toBe(i + 1);
-      else expect(tracker.crumbs.length).toBe(20);
+      tracker.crumb(i.toString(), 'UI');
+      if (i + 1 <= 20) expect(tracker.trail.length).toBe(i + 1);
+      else expect(tracker.trail.length).toBe(20);
     }
 
-    expect(tracker.crumbs[0].message).toBe('29');
+    expect(tracker.trail[0].message).toBe('29');
   });
 
   it('clear logs', () => {
     const error = new Error('test');
-    tracker.log(error, ['UI']);
+    tracker.send(error, ['UI']);
     expect(tracker.logs.length).toBe(1);
     tracker.clear();
     expect(tracker.logs.length).toBe(0);

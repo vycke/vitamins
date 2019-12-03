@@ -29,12 +29,12 @@ export type Node = {
 };
 
 export type Tracker = {
-  crumb(crumb: BreadCrumb): void;
-  log(error: Error, tags?: string[]): void;
+  crumb(message: string, category: string): void;
+  send(error: Error, tags?: string[]): void;
   search(tags: string[]): Node[];
   clear(): void;
   logs: Node[];
-  crumbs: BreadCrumb[];
+  trail: BreadCrumb[];
 };
 
 export type Environment = {

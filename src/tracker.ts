@@ -21,11 +21,11 @@ export default function createTracker(config: TrackerConfig): Tracker {
   );
 
   // function to add a crumb to the internal list
-  function addCrumb(crumb: BreadCrumb): void {
+  function addCrumb(message: string, category: string): void {
     if (_crumbs.length >= MAX_NUM_BREADCRUMBS) _crumbs.pop();
     const timestamp = new Date().toISOString();
-    logger(crumb.category, crumb.message);
-    _crumbs.unshift({ timestamp, ...crumb });
+    logger(category, message);
+    _crumbs.unshift({ timestamp, message, category });
   }
 
   // function to create a new node for the logs and add it to the logs
@@ -58,11 +58,12 @@ export default function createTracker(config: TrackerConfig): Tracker {
 
   return {
     crumb: addCrumb,
-    log: addNode,
+    send: addNode,
     clear(): void {
       _logs = [];
+      _crumbs = [];
     },
-    get crumbs(): BreadCrumb[] {
+    get trail(): BreadCrumb[] {
       return _crumbs;
     },
     get logs(): Node[] {
