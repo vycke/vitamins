@@ -10,21 +10,23 @@ import { environment, createNode, freeze } from './utils';
 import logger from './logger';
 
 const MAX_NUM_BREADCRUMBS = 20;
-const KEEP_ALIVE = 48;
-const LOCAL_TAG = 'vitamins';
+const KEEP_ALIVE = 24;
 
 export default function createTracker(config: TrackerConfig): Tracker {
-  // internal data
-  const _tag = `${LOCAL_TAG}_${config.namespace}_${config.version}`;
+  const yesterday = new Date();
+  yesterday.setHours(yesterday.getHours() - KEEP_ALIVE);
+
+  // flags usued for sync with local storage
+  const _logTag = `vitamins_${config.namespace}_${config.version}_logs`;
+  const _trailTag = `vitamins_${config.namespace}_${config.version}_trail`;
   const _meta = environment(config);
-  let _crumbs: BreadCrumb[] = [];
+  // crumbs older than the keep alive period (in hours) are removed on load
+  let _crumbs: BreadCrumb[] = JSON.parse(
+    localStorage.getItem(_trailTag) || '[]'
+  ).filter((l: BreadCrumb) => l.timestamp >= yesterday.toISOString());
   // logs older than the keep alive period (in hours) are removed on load
-  let _logs: Node[] = JSON.parse(localStorage.getItem(_tag) || '[]').filter(
-    (l: Node) => {
-      const today = new Date();
-      today.setHours(today.getHours() - KEEP_ALIVE);
-      return l.timestamp >= today.toISOString();
-    }
+  let _logs: Node[] = JSON.parse(localStorage.getItem(_logTag) || '[]').filter(
+    (l: Node) => l.timestamp >= yesterday.toISOString()
   );
 
   // function to add a crumb to the internal list
@@ -54,7 +56,8 @@ export default function createTracker(config: TrackerConfig): Tracker {
 
   // Listener to window events for storing the logs
   window.addEventListener('beforeunload', function() {
-    localStorage.setItem(_tag, JSON.stringify(_logs));
+    localStorage.setItem(_logTag, JSON.stringify(_logs));
+    localStorage.setItem(_trailTag, JSON.stringify(_crumbs));
   });
 
   // Listeners to window events for capturation errors

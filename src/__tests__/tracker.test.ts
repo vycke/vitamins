@@ -6,6 +6,19 @@ const config = {
   namespace: 'test'
 };
 
+const testTrail = [
+  {
+    timestamp: '1970-01-01T00:00:00.000Z',
+    message: 'test',
+    category: 'test'
+  },
+  {
+    timestamp: new Date().toISOString(),
+    message: 'test',
+    category: 'test'
+  }
+];
+
 const testLog = [
   {
     timestamp: '1970-01-01T00:00:00.000Z',
@@ -45,14 +58,18 @@ declare let ErrorEvent: {
 describe('sync with local storage', () => {
   let tracker;
   beforeEach(() => {
-    localStorage.setItem('vitamins_test_1.0', JSON.stringify(testLog));
+    localStorage.setItem('vitamins_test_1.0_logs', JSON.stringify(testLog));
+    localStorage.setItem('vitamins_test_1.0_trail', JSON.stringify(testTrail));
     tracker = createTracker(config);
   });
 
-  afterEach(() => localStorage.removeItem('vitamins_test_1.0'));
+  afterEach(() => {
+    localStorage.removeItem('vitamins_test_1.0_logs');
+    localStorage.removeItem('vitamins_test_1.0_trail');
+  });
 
   it('init', () => {
-    expect(tracker.trail).toEqual([]);
+    expect(tracker.trail.length).toBe(1);
     expect(tracker.logs.length).toBe(1);
   });
 });
@@ -64,14 +81,17 @@ describe('window events', () => {
     tracker = createTracker(config);
   });
 
-  afterEach(() => localStorage.removeItem('vitamins_test_1.0'));
+  afterEach(() => {
+    localStorage.removeItem('vitamins_test_1.0_logs');
+    localStorage.removeItem('vitamins_test_1.0_trail');
+  });
 
   it('add error and unload', () => {
     const error = new Error('test');
     tracker.send(error);
     window.dispatchEvent(new Event('beforeunload'));
     expect(
-      JSON.parse(localStorage.getItem('vitamins_test_1.0') || '').length
+      JSON.parse(localStorage.getItem('vitamins_test_1.0_logs') || '').length
     ).toBe(1);
   });
 

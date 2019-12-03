@@ -12,7 +12,7 @@ export type ErrorNode = {
 export type BreadCrumb = {
   category: string;
   message: string;
-  timestamp?: string;
+  timestamp: string;
 };
 
 export type TrackerConfig = {
