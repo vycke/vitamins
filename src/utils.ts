@@ -19,8 +19,8 @@ export function createNode(
   };
 }
 
-export function environment(config: HashMap<string>): Environment {
-  const _meta: HashMap<string> = {
+export function environment(config: HashMap<MetaDataType>): Environment {
+  const _meta: HashMap<MetaDataType> = {
     agent: navigator.userAgent,
     platform: navigator.platform,
     language: navigator.language,

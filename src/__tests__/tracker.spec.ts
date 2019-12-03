@@ -108,7 +108,7 @@ describe('tracker features', () => {
   it('crumbs', () => {
     tracker.crumb('test crumb', 'UI');
     expect(tracker.trail.length).toBe(1);
-    tracker.crumb('test crumb', 'Network');
+    tracker.crumb('test crumb', 'Network', { test: 'test' });
     expect(tracker.trail.length).toBe(2);
   });
 
@@ -128,12 +128,7 @@ describe('tracker features', () => {
     tracker.send(error, ['UI']);
     expect(tracker.trail.length).toBe(0);
     expect(tracker.logs.length).toBe(1);
-    expect(tracker.search(['Network']).length).toBe(0);
-    expect(tracker.search(['UI']).length).toBe(1);
     expect(tracker.logs[0].breadcrumbs.length).toBe(1);
-    tracker.send(error, ['Network']);
-    expect(tracker.search(['UI']).length).toBe(1);
-    expect(tracker.search(['UI', 'Network']).length).toBe(2);
   });
 
   it('error without tags and crumbs', () => {
@@ -143,7 +138,6 @@ describe('tracker features', () => {
     tracker.send(error);
     expect(tracker.trail.length).toBe(0);
     expect(tracker.logs.length).toBe(1);
-    expect(tracker.search(['UI']).length).toBe(0);
   });
 
   it('too many crumbs', () => {

@@ -1,4 +1,11 @@
-import { BreadCrumb, TrackerConfig, Tracker, Node } from './types';
+import {
+  BreadCrumb,
+  TrackerConfig,
+  Tracker,
+  Node,
+  HashMap,
+  MetaDataType
+} from './types';
 import { environment, createNode, freeze } from './utils';
 import logger from './logger';
 
@@ -21,11 +28,16 @@ export default function createTracker(config: TrackerConfig): Tracker {
   );
 
   // function to add a crumb to the internal list
-  function addCrumb(message: string, category: string): void {
-    if (_crumbs.length >= MAX_NUM_BREADCRUMBS) _crumbs.pop();
+  function addCrumb(
+    message: string,
+    category: string,
+    meta?: HashMap<MetaDataType>
+  ): void {
+    if (_crumbs.length >= (config.numberOfCrumbs || MAX_NUM_BREADCRUMBS))
+      _crumbs.pop();
     const timestamp = new Date().toISOString();
     logger(category, message);
-    _crumbs.unshift({ timestamp, message, category });
+    _crumbs.unshift({ timestamp, message, category, ...(meta && { meta }) });
   }
 
   // function to create a new node for the logs and add it to the logs
@@ -68,11 +80,6 @@ export default function createTracker(config: TrackerConfig): Tracker {
     },
     get logs(): Node[] {
       return freeze([..._logs]);
-    },
-    search(tags: string[]): Node[] {
-      return _logs.filter((log: Node) =>
-        log.tags?.some((t) => tags.includes(t))
-      );
     }
   };
 }

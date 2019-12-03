@@ -1,4 +1,4 @@
-export type MetaDataType = string | number | boolean;
+export type MetaDataType = string | number | boolean | undefined;
 export type HashMap<T> = {
   [key: string]: T;
 };
@@ -13,11 +13,13 @@ export type BreadCrumb = {
   category: string;
   message: string;
   timestamp?: string;
+  metadata?: HashMap<MetaDataType>;
 };
 
 export type TrackerConfig = {
   namespace: string;
   version: string;
+  numberOfCrumbs?: number;
 };
 
 export type Node = {
@@ -29,9 +31,8 @@ export type Node = {
 };
 
 export type Tracker = {
-  crumb(message: string, category: string): void;
+  crumb(message: string, category: string, meta?: HashMap<MetaDataType>): void;
   send(error: Error, tags?: string[]): void;
-  search(tags: string[]): Node[];
   clear(): void;
   logs: Node[];
   trail: BreadCrumb[];
