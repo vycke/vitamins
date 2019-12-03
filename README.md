@@ -17,7 +17,7 @@ The tracker even logs all errors and unhandled `Promise` rejections, by listenin
 You initiate tracker by providing a `config` object to the `createTracker` function. The configuration should have a `version` and `namespace` indication. After a tracker is initiated, it has the following properties at its disposal:
 
 - `send(error: Error, tags: string[])`: sends a new error to the log;
-- `crumb(crumb: Crumb)`: adds a breadcrumb to the internal list. Whenever an error is logged, the list of breadcrumbs is added to the logs, as additional context. Each breadcrumb consists of a `timestamp`, `message` and `category`;
+- `crumb(message: string, category; string)`: adds a breadcrumb to the internal list. Whenever an error is logged, the list of breadcrumbs is added to the logs, as additional context;
 - `clear()`: clears the current log and crumb lists;
 - `trail`: gives back the current trail of breadcumbs. A trail can have a maximum of 20 breadcrumbs;
 - `logs`: gives back the current list of logs.
