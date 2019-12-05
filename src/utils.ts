@@ -1,21 +1,31 @@
-import { HashMap, MetaDataType, Environment, Node } from './types';
+import {
+  HashMap,
+  MetaDataType,
+  Environment,
+  Node,
+  BaseError,
+  ErrorNode
+} from './types';
 
 export function createNode(
-  error: Error,
+  error: BaseError,
   metadata: HashMap<MetaDataType>,
   tags?: string[]
 ): Node {
-  const errorNode = {
+  const errorNode: ErrorNode = {
     message: error.message,
-    name: error.name,
+    name: error.constructor.name,
     stack: error.stack?.split('\r\n').filter((l) => l !== '')
   };
+
+  const newTags = tags || [];
+  if (error.status) newTags.push(error.status.toString());
 
   return {
     timestamp: new Date().toISOString(),
     error: errorNode,
     metadata,
-    ...(tags && { tags })
+    tags: newTags
   };
 }
 

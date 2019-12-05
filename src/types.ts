@@ -1,4 +1,9 @@
 export type MetaDataType = string | number | boolean | undefined;
+
+export interface BaseError extends Error {
+  status?: number;
+}
+
 export type HashMap<T> = {
   [key: string]: T;
 };
@@ -18,7 +23,6 @@ export type BreadCrumb = {
 export type TrackerConfig = {
   namespace: string;
   version: string;
-  numberOfCrumbs?: number;
 };
 
 export type Node = {

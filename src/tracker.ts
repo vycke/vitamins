@@ -4,12 +4,14 @@ import {
   Tracker,
   Node,
   HashMap,
-  MetaDataType
+  MetaDataType,
+  BaseError
 } from './types';
 import { environment, createNode, freeze } from './utils';
 import logger from './logger';
 
-const MAX_NUM_BREADCRUMBS = 20;
+const MAX_NUM_BREADCRUMBS = 200;
+const MAX_NUM_BREADCRUMBS_ATTACHED = 10;
 const KEEP_ALIVE = 24;
 
 export default function createTracker(config: TrackerConfig): Tracker {
@@ -35,21 +37,19 @@ export default function createTracker(config: TrackerConfig): Tracker {
     category: string,
     meta?: HashMap<MetaDataType>
   ): void {
-    if (_crumbs.length >= (config.numberOfCrumbs || MAX_NUM_BREADCRUMBS))
-      _crumbs.pop();
+    if (_crumbs.length >= MAX_NUM_BREADCRUMBS) _crumbs.pop();
     const timestamp = new Date().toISOString();
     logger(category, message, meta);
     _crumbs.unshift({ timestamp, message, category });
   }
 
   // function to create a new node for the logs and add it to the logs
-  function addNode(error: Error, tags?: string[]): void {
+  function addNode(error: BaseError, tags?: string[]): void {
     const node: Node = createNode(error, _meta.get(), tags);
 
-    if (_crumbs.length > 0) {
-      node.breadcrumbs = _crumbs;
-      _crumbs = [];
-    }
+    if (_crumbs.length > 0)
+      node.breadcrumbs = _crumbs.slice(0, MAX_NUM_BREADCRUMBS_ATTACHED);
+
     logger('error', node.error.message, node.error.stack);
     _logs.unshift(node);
   }

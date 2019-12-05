@@ -1,5 +1,6 @@
 import createTracker from '../tracker';
 import { createNode } from '../utils';
+import { HttpError } from '../errors';
 
 const config = {
   version: '1.0',
@@ -137,18 +138,19 @@ describe('tracker features', () => {
     expect(tracker.trail.length).toBe(1);
     const error = new Error('test');
     tracker.send(error);
-    expect(tracker.trail.length).toBe(0);
+    expect(tracker.trail.length).toBe(1);
     expect(tracker.logs.length).toBe(1);
   });
 
   it('error with tags and crumbs', () => {
     tracker.crumb('test crumb', 'UI');
     expect(tracker.trail.length).toBe(1);
-    const error = new Error('test');
+    const error = new HttpError('test', 404);
     tracker.send(error, ['UI']);
-    expect(tracker.trail.length).toBe(0);
+    expect(tracker.trail.length).toBe(1);
     expect(tracker.logs.length).toBe(1);
     expect(tracker.logs[0].breadcrumbs.length).toBe(1);
+    expect(tracker.logs[0].tags.length).toBe(2);
   });
 
   it('error without tags and crumbs', () => {
@@ -161,13 +163,13 @@ describe('tracker features', () => {
   });
 
   it('too many crumbs', () => {
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 502; i++) {
       tracker.crumb(i.toString(), 'UI');
-      if (i + 1 <= 20) expect(tracker.trail.length).toBe(i + 1);
-      else expect(tracker.trail.length).toBe(20);
+      if (i + 1 <= 500) expect(tracker.trail.length).toBe(i + 1);
+      else expect(tracker.trail.length).toBe(500);
     }
 
-    expect(tracker.trail[0].message).toBe('29');
+    expect(tracker.trail[0].message).toBe('501');
   });
 
   it('clear logs', () => {
