@@ -165,8 +165,8 @@ describe('tracker features', () => {
   it('too many crumbs', () => {
     for (let i = 0; i < 502; i++) {
       tracker.crumb(i.toString(), 'UI');
-      if (i + 1 <= 500) expect(tracker.trail.length).toBe(i + 1);
-      else expect(tracker.trail.length).toBe(500);
+      if (i + 1 <= 200) expect(tracker.trail.length).toBe(i + 1);
+      else expect(tracker.trail.length).toBe(200);
     }
 
     expect(tracker.trail[0].message).toBe('501');
