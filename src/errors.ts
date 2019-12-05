@@ -7,11 +7,8 @@ export class HttpError extends Error {
   public status?: number;
 
   constructor(message: string, status?: number) {
-    /* istanbul ignore next */
-
     super(message);
     this.status = status;
-    Error.captureStackTrace(this, HttpError);
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
@@ -21,7 +18,6 @@ export class ServerError extends HttpError {
 
   constructor(message: string) {
     super(message, 503);
-    Error.captureStackTrace(this, ServerError);
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
@@ -31,7 +27,6 @@ export class NetworkError extends HttpError {
 
   constructor(message: string) {
     super(message, 408);
-    Error.captureStackTrace(this, NetworkError);
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
@@ -41,7 +36,6 @@ export class PermissionError extends Error {
 
   constructor(message: string) {
     super(message);
-    Error.captureStackTrace(this, PermissionError);
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
@@ -51,7 +45,6 @@ export class ValidationError extends Error {
 
   constructor(message: string) {
     super(message);
-    Error.captureStackTrace(this, ValidationError);
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
