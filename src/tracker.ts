@@ -10,7 +10,7 @@ import {
 import { environment, createNode, freeze } from './utils';
 import logger from './logger';
 
-const MAX_NUM_BREADCRUMBS = 200;
+const MAX_NUM_BREADCRUMBS = 500;
 const MAX_NUM_BREADCRUMBS_ATTACHED = 10;
 const KEEP_ALIVE = 24;
 
@@ -35,12 +35,12 @@ export default function createTracker(config: TrackerConfig): Tracker {
   function addCrumb(
     message: string,
     category: string,
-    meta?: HashMap<MetaDataType>
+    metadata?: HashMap<MetaDataType>
   ): void {
     if (_crumbs.length >= MAX_NUM_BREADCRUMBS) _crumbs.pop();
     const timestamp = new Date().toISOString();
-    logger(category, message, meta);
-    _crumbs.unshift({ timestamp, message, category });
+    logger(category, message, metadata);
+    _crumbs.unshift({ timestamp, message, category, metadata });
   }
 
   // function to create a new node for the logs and add it to the logs
