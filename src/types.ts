@@ -2,6 +2,7 @@ export type MetaDataType = string | number | boolean | undefined;
 
 export interface BaseError extends Error {
   status?: number;
+  type?: string;
 }
 
 export type HashMap<T> = {

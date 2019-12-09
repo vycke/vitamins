@@ -14,7 +14,7 @@ export function createNode(
 ): Node {
   const errorNode: ErrorNode = {
     message: error.message,
-    name: error.constructor.name,
+    name: error.type || error.name,
     stack: error.stack?.split('\r\n').filter((l) => l !== '')
   };
 
