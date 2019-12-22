@@ -59,19 +59,19 @@ declare let ErrorEvent: {
 describe('sync with local storage', () => {
   let tracker;
   beforeEach(() => {
-    localStorage.setItem('vitamins_test_1.0_logs', JSON.stringify(testLog));
-    localStorage.setItem('vitamins_test_1.0_trail', JSON.stringify(testTrail));
+    localStorage.setItem('vitamins_test_errors', JSON.stringify(testLog));
+    localStorage.setItem('vitamins_test_crumbs', JSON.stringify(testTrail));
     tracker = createTracker(config);
   });
 
   afterEach(() => {
-    localStorage.removeItem('vitamins_test_1.0_logs');
-    localStorage.removeItem('vitamins_test_1.0_trail');
+    localStorage.removeItem('vitamins_test_errors');
+    localStorage.removeItem('vitamins_test_crumbs');
   });
 
   it('init', () => {
-    expect(tracker.trail.length).toBe(1);
-    expect(tracker.logs.length).toBe(1);
+    expect(tracker.crumbs.length).toBe(1);
+    expect(tracker.errors.length).toBe(1);
   });
 });
 
@@ -83,8 +83,8 @@ describe('window events', () => {
   });
 
   afterEach(() => {
-    localStorage.removeItem('vitamins_test_1.0_logs');
-    localStorage.removeItem('vitamins_test_1.0_trail');
+    localStorage.removeItem('vitamins_test_errors');
+    localStorage.removeItem('vitamins_test_crumbs');
   });
 
   it('add error and unload', () => {
@@ -92,7 +92,7 @@ describe('window events', () => {
     tracker.send(error);
     window.dispatchEvent(new Event('beforeunload'));
     expect(
-      JSON.parse(localStorage.getItem('vitamins_test_1.0_logs') || '').length
+      JSON.parse(localStorage.getItem('vitamins_test_errors') || '').length
     ).toBe(1);
   });
 
@@ -106,12 +106,12 @@ describe('window events', () => {
         filename: 'closet.html'
       })
     );
-    expect(tracker.logs.length).toBe(1);
+    expect(tracker.errors.length).toBe(1);
   });
 
   it('Throw error in window', () => {
     window.dispatchEvent(new Event('unhandledrejection'));
-    expect(tracker.logs.length).toBe(1);
+    expect(tracker.errors.length).toBe(1);
   });
 });
 
@@ -122,62 +122,62 @@ describe('tracker features', () => {
   });
 
   it('init', () => {
-    expect(tracker.trail).toEqual([]);
-    expect(tracker.logs).toEqual([]);
+    expect(tracker.crumbs).toEqual([]);
+    expect(tracker.errors).toEqual([]);
   });
 
   it('crumbs', () => {
     tracker.crumb('test crumb', 'UI');
-    expect(tracker.trail.length).toBe(1);
+    expect(tracker.crumbs.length).toBe(1);
     tracker.crumb('test crumb', 'Network', { test: 'test' });
-    expect(tracker.trail.length).toBe(2);
+    expect(tracker.crumbs.length).toBe(2);
   });
 
   it('error with no tags', () => {
     tracker.crumb('test crumb', 'UI');
-    expect(tracker.trail.length).toBe(1);
+    expect(tracker.crumbs.length).toBe(1);
     const error = new Error('test');
     tracker.send(error);
-    expect(tracker.trail.length).toBe(1);
-    expect(tracker.logs.length).toBe(1);
+    expect(tracker.crumbs.length).toBe(1);
+    expect(tracker.errors.length).toBe(1);
   });
 
   it('error with tags and crumbs', () => {
     tracker.crumb('test crumb', 'UI');
-    expect(tracker.trail.length).toBe(1);
+    expect(tracker.crumbs.length).toBe(1);
     const error = new HttpError('test', 404);
     tracker.send(error, ['UI']);
-    expect(tracker.trail.length).toBe(1);
-    expect(tracker.logs.length).toBe(1);
-    expect(tracker.logs[0].breadcrumbs.length).toBe(1);
-    expect(tracker.logs[0].tags.length).toBe(2);
+    expect(tracker.crumbs.length).toBe(1);
+    expect(tracker.errors.length).toBe(1);
+    expect(tracker.errors[0].breadcrumbs.length).toBe(1);
+    expect(tracker.errors[0].tags.length).toBe(2);
   });
 
   it('error without tags and crumbs', () => {
-    expect(tracker.trail.length).toBe(0);
-    expect(tracker.logs.length).toBe(0);
+    expect(tracker.crumbs.length).toBe(0);
+    expect(tracker.errors.length).toBe(0);
     const error = new Error('test');
     tracker.send(error);
-    expect(tracker.trail.length).toBe(0);
-    expect(tracker.logs.length).toBe(1);
+    expect(tracker.crumbs.length).toBe(0);
+    expect(tracker.errors.length).toBe(1);
   });
 
   it('too many crumbs', () => {
     for (let i = 0; i < 502; i++) {
       tracker.crumb(i.toString(), 'UI');
-      if (i + 1 <= 500) expect(tracker.trail.length).toBe(i + 1);
-      else expect(tracker.trail.length).toBe(500);
+      if (i + 1 <= 500) expect(tracker.crumbs.length).toBe(i + 1);
+      else expect(tracker.crumbs.length).toBe(500);
     }
 
-    expect(tracker.trail[0].message).toBe('501');
+    expect(tracker.crumbs[0].message).toBe('501');
   });
 
   it('clear logs', () => {
     const error = new Error('test');
     tracker.send(error, ['UI']);
-    expect(tracker.logs.length).toBe(1);
+    expect(tracker.errors.length).toBe(1);
     tracker.clear();
-    expect(tracker.logs.length).toBe(0);
+    expect(tracker.errors.length).toBe(0);
   });
 
   it('create node', () => {

@@ -39,12 +39,12 @@ export type Tracker = {
   crumb(message: string, category: string, meta?: HashMap<MetaDataType>): void;
   send(error: Error, tags?: string[]): void;
   clear(): void;
-  logs: Node[];
-  trail: BreadCrumb[];
+  errors: Node[];
+  crumbs: BreadCrumb[];
 };
 
 export type Environment = {
   get(): HashMap<MetaDataType>;
 };
 
-export type Arg = any;
+export type Arg = number | string | boolean | symbol | object | undefined;

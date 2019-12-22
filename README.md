@@ -34,7 +34,7 @@ console.log(tracker.trail); // [ { message: '/home', category: 'Navigation', tim
 const error = new Error('page does not exist');
 tracker.send(error, ['UI', 'Navigation']);
 console.log(tracker.trail); // [ ]
-console.log(tracker.logs); // [ { error: error, breadcrumbs: [ { ... } ], ... } ]
+console.log(tracker.errors); // [ { error: error, breadcrumbs: [ { ... } ], ... } ]
 ```
 
 ### Sync with local storage
