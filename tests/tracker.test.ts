@@ -1,7 +1,5 @@
 import createTracker from '../src/tracker';
 import { createNode } from '../src/utils';
-import { HttpError } from '../src/errors';
-
 const config = {
   version: '1.0',
   namespace: 'test'
@@ -145,12 +143,12 @@ describe('tracker features', () => {
   it('error with tags and crumbs', () => {
     tracker.crumb('test crumb', 'UI');
     expect(tracker.crumbs.length).toBe(1);
-    const error = new HttpError('test', 404);
+    const error = new Error('test');
     tracker.send(error, ['UI']);
     expect(tracker.crumbs.length).toBe(1);
     expect(tracker.errors.length).toBe(1);
     expect(tracker.errors[0].breadcrumbs.length).toBe(1);
-    expect(tracker.errors[0].tags.length).toBe(2);
+    expect(tracker.errors[0].tags.length).toBe(1);
   });
 
   it('error without tags and crumbs', () => {

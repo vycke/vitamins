@@ -18,14 +18,11 @@ export function createNode(
     stack: error.stack?.split('\r\n').filter((l) => l !== '')
   };
 
-  const newTags = tags || [];
-  if (error.status) newTags.push(error.status.toString());
-
   return {
     timestamp: new Date().toISOString(),
     error: errorNode,
     metadata,
-    tags: newTags
+    tags: tags || []
   };
 }
 
