@@ -1,4 +1,4 @@
-import { debounce, throttle } from '../performance';
+import { debounce, throttle } from '../src/performance';
 
 jest.useFakeTimers();
 

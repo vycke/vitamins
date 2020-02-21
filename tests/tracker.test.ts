@@ -1,6 +1,6 @@
-import createTracker from '../tracker';
-import { createNode } from '../utils';
-import { HttpError } from '../errors';
+import createTracker from '../src/tracker';
+import { createNode } from '../src/utils';
+import { HttpError } from '../src/errors';
 
 const config = {
   version: '1.0',

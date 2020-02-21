@@ -29,3 +29,5 @@ export function throttle(func: Function, delay: number): Function {
     if (!_timer) _timer = window.setTimeout(execute, delay);
   };
 }
+
+// export function memory();
