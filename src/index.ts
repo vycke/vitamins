@@ -1,5 +1,3 @@
-import logger from './logger';
-import tracker from './tracker';
-import { throttle, debounce } from './helpers';
-
-export { logger, tracker, throttle, debounce };
+export { default as logger } from './logger';
+export { default as tracker } from './tracker';
+export { throttle, debounce, memorySizeOf } from './helpers';
