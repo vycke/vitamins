@@ -4,16 +4,9 @@ export type HashMap<T> = {
   [key: string]: T;
 };
 
-export type BaseOptions = {
+export type TrackerOptions = {
   namespace: string;
   version: string;
-};
-
-export type DefaultOptions = {
-  [key: string]: number;
-};
-
-export type TrackerOptions = BaseOptions & {
   numberOfCrumbsAttached?: number;
   maxLogSize?: number;
   maxErrorSize?: number;
