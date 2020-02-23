@@ -5,14 +5,22 @@ import {
   HashMap,
   TrackerOptions,
   InitialNodes,
-  Storage
+  Storage,
+  Primitive
 } from './types';
-import logger from './logger';
 
 // Helper function used to create a unique sesson ID
 function uuid(): string {
   return 'xxxxxxxxxx'.replace(/[x]/g, () =>
     ((Math.random() * 16) | 0).toString(16)
+  );
+}
+
+function logger(tag = '', ...messages: Primitive[]): void {
+  console.log(
+    `%c[${new Date().toLocaleTimeString()}] ${tag.toUpperCase()}:`,
+    'color: fuchsia',
+    ...messages.filter((m) => m !== undefined)
   );
 }
 
@@ -48,7 +56,7 @@ export default function tracker(
   // function that creates a new log node
   function addLogNode(message: string, tag: string, metadata?: any): void {
     const timestamp = new Date().toISOString();
-    logger(tag, message, metadata);
+    if (options.debug) logger(tag, message, metadata);
     if (_logs.length >= (options.maxLogSize || 200)) _logs.pop();
     _logs.unshift({ timestamp, message, tag, metadata, sessionId });
     options.onChange?.(_logs, _errors);

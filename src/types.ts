@@ -7,6 +7,7 @@ export type HashMap<T> = {
 export type TrackerOptions = {
   namespace: string;
   version: string;
+  debug: boolean;
   numberOfCrumbsAttached?: number;
   maxLogSize?: number;
   maxErrorSize?: number;
