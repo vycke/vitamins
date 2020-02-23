@@ -2,6 +2,7 @@ import createTracker from '../src/tracker';
 
 const config = {
   version: '1.0',
+  debug: false,
   namespace: 'test'
 };
 
