@@ -1,36 +1,42 @@
-import { LogNode, Tracker, ErrorNode, HashMap, TrackerOptions } from './types';
+import {
+  LogNode,
+  Tracker,
+  ErrorNode,
+  HashMap,
+  TrackerOptions,
+  InitialNodes,
+  Storage
+} from './types';
 import logger from './logger';
 
-// global constants
-const TAGS = ['vitamins_logs', 'vitamins_errors'];
-const DEFAULT_OPTIONS: HashMap<number> = {
-  numberOfCrumbsAttached: 10,
-  maxErrorSize: 50,
-  maxLogSize: 200
-};
+// Helper function used to create a unique sesson ID
+function uuid(): string {
+  return 'xxxxxxxxxx'.replace(/[x]/g, () =>
+    ((Math.random() * 16) | 0).toString(16)
+  );
+}
 
-function getEnvironment(options: TrackerOptions): HashMap<string> {
-  return {
+export default function tracker(
+  options: TrackerOptions,
+  initialNodes?: InitialNodes
+): Tracker {
+  // configurations set once the tracker is initiated
+  const sessionId: string = uuid();
+  const _env: HashMap<string> = {
     agent: navigator.userAgent,
     platform: navigator.platform,
     language: navigator.language,
     version: options.version,
-    namespace: options.namespace,
-    location: window.location.href
+    namespace: options.namespace
   };
-}
 
-export default function tracker(options: TrackerOptions): Tracker {
-  // configurations set once the tracker is initiated
-  const _options: TrackerOptions = { ...DEFAULT_OPTIONS, ...options };
-  let _logs: LogNode[] = JSON.parse(localStorage.getItem(TAGS[0]) || '[]');
-  let _errors: ErrorNode[] = JSON.parse(localStorage.getItem(TAGS[1]) || '[]');
+  // The actual data of the tracker
+  let _logs: LogNode[] = initialNodes?.logs || [];
+  let _errors: ErrorNode[] = initialNodes?.errors || [];
 
   // Listener to window events for storing the logs
   window.addEventListener('beforeunload', function() {
-    _options.onUnload?.(_logs, _errors);
-    localStorage.setItem(TAGS[0], JSON.stringify(_logs));
-    localStorage.setItem(TAGS[1], JSON.stringify(_errors));
+    options.beforeUnload?.(_logs, _errors);
   });
 
   // Clears the logs and errors
@@ -40,44 +46,44 @@ export default function tracker(options: TrackerOptions): Tracker {
   }
 
   // function that creates a new log node
-  function addLog(message: string, category: string, metadata?: any): void {
+  function addLogNode(message: string, tag: string, metadata?: any): void {
     const timestamp = new Date().toISOString();
-    logger(category, message, metadata);
-    if (_logs.length >= (_options.maxLogSize as number)) _logs.pop();
-    _logs.unshift({ timestamp, message, category, metadata });
+    logger(tag, message, metadata);
+    if (_logs.length >= (options.maxLogSize || 200)) _logs.pop();
+    _logs.unshift({ timestamp, message, tag, metadata, sessionId });
   }
 
   // function that creates a new error node
-  function addError(error: Error, tags?: string[]): void {
+  function addErrorNode(error: Error, tags?: string[]): void {
     const node: ErrorNode = {
       timestamp: new Date().toISOString(),
+      sessionId,
       error,
-      metadata: getEnvironment(_options),
       tags: tags || [],
-      crumbs: _logs.slice(0, _options.numberOfCrumbsAttached)
+      environment: { ..._env, location: window.location.href },
+      crumbs: _logs.slice(0, options.numberOfCrumbsAttached || 10)
     };
 
-    if (_errors.length >= (_options.maxErrorSize as number)) _errors.pop();
+    if (_errors.length >= (options.maxErrorSize || 50)) _errors.pop();
     _errors.unshift(node);
-    addLog(node.error.message, 'error', { error: node });
+    addLogNode(node.error.message, 'error', { error: node });
   }
 
   // Listeners to window events for capturation errors
   window.addEventListener('error', function(event) {
-    addError(event.error, ['window']);
+    addErrorNode(event.error, ['window']);
   });
 
   // Listeners to window events for capturation errors
   window.addEventListener('unhandledrejection', function(event) {
     const error = new Error(JSON.stringify(event.reason));
-    addError(error, ['promise']);
+    addErrorNode(error, ['promise']);
   });
 
   return {
-    error: addError,
-    log: addLog,
+    error: addErrorNode,
+    log: addLogNode,
     clear,
-    logs: (): LogNode[] => _logs,
-    errors: (): ErrorNode[] => _errors
+    get: (): Storage => ({ logs: _logs, errors: _errors })
   };
 }

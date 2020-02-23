@@ -5,20 +5,20 @@ const config = {
   namespace: 'test'
 };
 
-const testLogs = [
+const logs = [
   {
     timestamp: '1970-01-01T00:00:00.000Z',
     message: 'test',
-    category: 'test'
+    tag: 'test'
   },
   {
     timestamp: new Date().toISOString(),
     message: 'test',
-    category: 'test'
+    tag: 'test'
   }
 ];
 
-const testErrors = [
+const errors = [
   {
     timestamp: '1970-01-01T00:00:00.000Z',
     error: {
@@ -53,48 +53,32 @@ declare let ErrorEvent: {
   prototype: ErrorEvent;
 };
 
-// Retrieving values from local storage
-describe('sync with local storage', () => {
-  let tracker;
-  beforeEach(() => {
-    localStorage.setItem('vitamins_errors', JSON.stringify(testErrors));
-    localStorage.setItem('vitamins_logs', JSON.stringify(testLogs));
-    tracker = createTracker(config);
-  });
+const mockFn = jest.fn((x) => x);
 
-  afterEach(() => {
-    localStorage.removeItem('vitamins_errors');
-    localStorage.removeItem('vitamins_logs');
-  });
+/**
+ *
+ * Actual beginning of the tests
+ *
+ */
 
-  it('init', () => {
-    expect(tracker.logs().length).toBe(2);
-    expect(tracker.errors().length).toBe(2);
-  });
+it('using the initial-nodes and before-unload', () => {
+  const tracker = createTracker(
+    { ...config, beforeUnload: mockFn },
+    { logs, errors }
+  );
+
+  expect(tracker.get().logs.length).toBe(2);
+  expect(tracker.get().errors.length).toBe(2);
+
+  expect(mockFn.mock.calls.length).toBe(0);
+  window.dispatchEvent(new Event('beforeunload'));
+  expect(mockFn.mock.calls.length).toBe(1);
 });
 
 // window events handlers
 describe('window events', () => {
-  let tracker;
-  beforeEach(() => {
-    tracker = createTracker(config);
-  });
-
-  afterEach(() => {
-    localStorage.removeItem('vitamins_errors');
-    localStorage.removeItem('vitamins_logs');
-  });
-
-  it('add error and unload', () => {
-    const error = new Error('test');
-    tracker.error(error);
-    window.dispatchEvent(new Event('beforeunload'));
-    expect(
-      JSON.parse(localStorage.getItem('vitamins_errors') || '').length
-    ).toBe(1);
-  });
-
   it('Throw error in window', () => {
+    const tracker = createTracker(config);
     window.dispatchEvent(
       new ErrorEvent('error', {
         error: new Error('AAAHHHH'),
@@ -104,12 +88,57 @@ describe('window events', () => {
         filename: 'closet.html'
       })
     );
-    expect(tracker.errors().length).toBe(1);
+    expect(tracker.get().errors.length).toBe(1);
   });
 
   it('Throw error in window', () => {
+    const tracker = createTracker(config);
     window.dispatchEvent(new Event('unhandledrejection'));
-    expect(tracker.errors().length).toBe(1);
+    expect(tracker.get().errors.length).toBe(1);
+  });
+
+  it('Unload without callback', () => {
+    const tracker = createTracker(config);
+    window.dispatchEvent(new Event('beforeunload'));
+    expect(tracker.get().errors.length).toBe(0);
+  });
+});
+
+describe('tracker configuration', () => {
+  it('default max number of logs ', () => {
+    const tracker = createTracker(config);
+    for (let i = 0; i < 202; i++) {
+      tracker.log(i.toString(), 'UI');
+      if (i + 1 <= 200) expect(tracker.get().logs.length).toBe(i + 1);
+      else expect(tracker.get().logs.length).toBe(200);
+    }
+
+    expect(tracker.get().logs[0].message).toBe('201');
+  });
+
+  it('default max number of errors', () => {
+    const tracker = createTracker(config);
+    for (let i = 0; i < 52; i++) {
+      tracker.error(new Error(i.toString()));
+      if (i + 1 <= 50) expect(tracker.get().errors.length).toBe(i + 1);
+      else expect(tracker.get().errors.length).toBe(50);
+    }
+
+    expect(tracker.get().logs[0].message).toBe('51');
+  });
+
+  it('custom number of logs & errors', () => {
+    const tracker = createTracker({
+      ...config,
+      maxLogSize: 1,
+      maxErrorSize: 1
+    });
+    tracker.error(new Error('1'));
+    tracker.error(new Error('2'));
+
+    expect(tracker.get().logs.length).toBe(1);
+    expect(tracker.get().errors.length).toBe(1);
+    expect(tracker.get().logs[0].message).toBe('2');
   });
 });
 
@@ -120,61 +149,61 @@ describe('tracker features', () => {
   });
 
   it('init', () => {
-    expect(tracker.logs()).toEqual([]);
-    expect(tracker.errors()).toEqual([]);
+    expect(tracker.get().logs).toEqual([]);
+    expect(tracker.get().errors).toEqual([]);
   });
 
-  it('crumbs', () => {
-    tracker.log('test crumb', 'UI');
-    expect(tracker.logs().length).toBe(1);
-    tracker.log('test crumb', 'Network', { test: 'test' });
-    expect(tracker.logs().length).toBe(2);
+  it('logs', () => {
+    tracker.log('test log', 'UI');
+    expect(tracker.get().logs.length).toBe(1);
+    tracker.log('test log', 'Network', { test: 'test' });
+    expect(tracker.get().logs.length).toBe(2);
   });
 
   it('error with no tags', () => {
     tracker.log('test crumb', 'UI');
-    expect(tracker.logs().length).toBe(1);
+    expect(tracker.get().logs.length).toBe(1);
     const error = new Error('test');
     tracker.error(error);
-    expect(tracker.logs().length).toBe(2);
-    expect(tracker.errors().length).toBe(1);
+    expect(tracker.get().logs.length).toBe(2);
+    expect(tracker.get().errors.length).toBe(1);
   });
 
   it('error with tags and crumbs', () => {
     tracker.log('test crumb', 'UI');
-    expect(tracker.logs().length).toBe(1);
+    expect(tracker.get().logs.length).toBe(1);
     const error = new Error('test');
     tracker.error(error, ['UI']);
-    expect(tracker.logs().length).toBe(2);
-    expect(tracker.errors().length).toBe(1);
-    expect(tracker.errors()[0].crumbs.length).toBe(1);
-    expect(tracker.errors()[0].tags.length).toBe(1);
+    expect(tracker.get().logs.length).toBe(2);
+    expect(tracker.get().errors.length).toBe(1);
+    expect(tracker.get().errors[0].crumbs.length).toBe(1);
+    expect(tracker.get().errors[0].tags.length).toBe(1);
   });
 
   it('error without tags and crumbs', () => {
-    expect(tracker.logs().length).toBe(0);
-    expect(tracker.errors().length).toBe(0);
+    expect(tracker.get().logs.length).toBe(0);
+    expect(tracker.get().errors.length).toBe(0);
     const error = new Error('test');
     tracker.error(error);
-    expect(tracker.logs().length).toBe(1);
-    expect(tracker.errors().length).toBe(1);
+    expect(tracker.get().logs.length).toBe(1);
+    expect(tracker.get().errors.length).toBe(1);
   });
 
   it('too many crumbs', () => {
     for (let i = 0; i < 202; i++) {
       tracker.log(i.toString(), 'UI');
-      if (i + 1 <= 200) expect(tracker.logs().length).toBe(i + 1);
-      else expect(tracker.logs().length).toBe(200);
+      if (i + 1 <= 200) expect(tracker.get().logs.length).toBe(i + 1);
+      else expect(tracker.get().logs.length).toBe(200);
     }
 
-    expect(tracker.logs()[0].message).toBe('201');
+    expect(tracker.get().logs[0].message).toBe('201');
   });
 
   it('clear logs', () => {
     const error = new Error('test');
     tracker.error(error, ['UI']);
-    expect(tracker.errors().length).toBe(1);
+    expect(tracker.get().errors.length).toBe(1);
     tracker.clear();
-    expect(tracker.errors().length).toBe(0);
+    expect(tracker.get().errors.length).toBe(0);
   });
 });

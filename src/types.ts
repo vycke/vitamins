@@ -10,28 +10,36 @@ export type TrackerOptions = {
   numberOfCrumbsAttached?: number;
   maxLogSize?: number;
   maxErrorSize?: number;
-  onUnload?: Function;
+  beforeUnload?: Function;
+};
+
+export type InitialNodes = {
+  logs: LogNode[];
+  errors: ErrorNode[];
 };
 
 export type LogNode = {
-  category: string;
+  tag: string;
   message: string;
   timestamp: string;
+  sessionId?: string;
   metadata?: HashMap<Primitive>;
 };
 
 export type ErrorNode = {
   timestamp: string;
   error: Error;
+  sessionId?: string;
   tags?: string[];
+  environment?: HashMap<string>;
   crumbs?: LogNode[];
-  metadata?: HashMap<Primitive>;
 };
 
+export type Storage = { errors: ErrorNode[]; logs: LogNode[] };
+
 export type Tracker = {
-  log(message: string, category: string, meta?: any): void;
+  log(message: string, tag: string, metadata?: any): void;
   error(error: Error, tags?: string[]): void;
   clear(): void;
-  errors(): ErrorNode[];
-  logs(): LogNode[];
+  get(): Storage;
 };
