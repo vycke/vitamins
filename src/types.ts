@@ -11,6 +11,7 @@ export type TrackerOptions = {
   maxLogSize?: number;
   maxErrorSize?: number;
   beforeUnload?: Function;
+  onChange?: Function;
 };
 
 export type InitialNodes = {

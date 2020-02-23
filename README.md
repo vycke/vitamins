@@ -1,4 +1,4 @@
-# Vitamins - JavaScript error tracking libary
+# Vitamins - JavaScript system tracking libary
 
 ![](https://github.com/kevtiq/vitamins/workflows/test/badge.svg)
 [![Node version](https://img.shields.io/npm/v/vitamins.svg?style=flat)](https://www.npmjs.com/package/vitamins)

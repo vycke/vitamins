@@ -75,6 +75,13 @@ it('using the initial-nodes and before-unload', () => {
   expect(mockFn.mock.calls.length).toBe(1);
 });
 
+it('onChange callback option', () => {
+  const tracker = createTracker({ ...config, onChange: mockFn });
+  expect(mockFn.mock.calls.length).toBe(1);
+  tracker.log('test', 'test');
+  expect(mockFn.mock.calls.length).toBe(2);
+});
+
 // window events handlers
 describe('window events', () => {
   it('Throw error in window', () => {

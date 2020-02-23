@@ -51,6 +51,7 @@ export default function tracker(
     logger(tag, message, metadata);
     if (_logs.length >= (options.maxLogSize || 200)) _logs.pop();
     _logs.unshift({ timestamp, message, tag, metadata, sessionId });
+    options.onChange?.(_logs, _errors);
   }
 
   // function that creates a new error node
