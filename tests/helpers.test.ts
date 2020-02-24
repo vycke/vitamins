@@ -1,6 +1,13 @@
-import { debounce, throttle } from '../performance';
+import { debounce, throttle, memorySizeOf } from '../src/helpers';
 
 jest.useFakeTimers();
+
+const fakeObj = {
+  key1: 'test',
+  key2: true,
+  key3: false,
+  key4: 10
+};
 
 it('debounce', () => {
   const mockFn = jest.fn((x) => x);
@@ -34,4 +41,16 @@ it('throttle', () => {
   jest.advanceTimersByTime(5);
   expect(mockFn).toHaveBeenCalledTimes(2);
   expect(mockFn).toBeCalledWith(10);
+});
+
+it('memorySizeOf', () => {
+  expect(memorySizeOf('test')).toBe(8);
+  expect(memorySizeOf(true)).toBe(4);
+  expect(memorySizeOf(false)).toBe(4);
+  expect(memorySizeOf(10)).toBe(8);
+  expect(memorySizeOf(fakeObj)).toBe(24);
+  expect(memorySizeOf(JSON.stringify(fakeObj))).toBe(100);
+  expect(memorySizeOf([fakeObj, fakeObj])).toBe(48);
+  expect(memorySizeOf(Symbol('test'))).toBe(0);
+  expect(memorySizeOf(JSON.stringify([fakeObj, fakeObj]))).toBe(206);
 });

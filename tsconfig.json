@@ -1,6 +1,5 @@
 {
-  "include": ["src/"],
-  "exclude": ["**/__tests__/"],
+  "exclude": ["tests", "dist", "lib", "es", "node_modules"],
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "composite": true,
@@ -16,7 +15,6 @@
     "experimentalDecorators": true,
     "strictPropertyInitialization": true,
     "outDir": "dist",
-    "rootDir": "src",
-    "removeComments": true
+    "rootDir": "src"
   }
 }

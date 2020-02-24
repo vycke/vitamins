@@ -1,15 +1,15 @@
 {
   "name": "vitamins",
-  "version": "1.0.8",
+  "version": "2.0.0",
   "description": "Error & health tracking, with performance helpers",
   "main": "dist/index.js",
-  "types": "dist.index.d.ts",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist/**/*"
+    "dist"
   ],
   "scripts": {
     "test": "jest",
-    "clean": "rimraf ./dist && rimraf ./tsconfig.tsbuildinfo",
+    "clean": "rm -rf lib dist es tsconfig.tsbuildinfo",
     "test:watch": "npm test -- --watchAll --coverage",
     "build": "npm run clean && tsc && tsc -b ./tsconfig.json && npm run bundlesize",
     "prepublish": "npm run build",

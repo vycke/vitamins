@@ -13,8 +13,11 @@ npm-debug.log
 
 
 .github/
+.vscode/
 src/
 .eslintrc
 .prettierrc
 jest.config.js
 .gitignore
+bundlesize.config.json
+tsconfig.*

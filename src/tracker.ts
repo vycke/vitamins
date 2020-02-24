@@ -1,88 +1,98 @@
 import {
-  BreadCrumb,
-  TrackerConfig,
+  LogNode,
   Tracker,
-  Node,
+  ErrorNode,
   HashMap,
-  MetaDataType,
-  BaseError
+  TrackerOptions,
+  InitialNodes,
+  Storage,
+  Primitive
 } from './types';
-import { environment, createNode, freeze } from './utils';
-import logger from './logger';
 
-const MAX_NUM_BREADCRUMBS = 500;
-const MAX_NUM_BREADCRUMBS_ATTACHED = 10;
-const KEEP_ALIVE = 24;
-
-export default function createTracker(config: TrackerConfig): Tracker {
-  const yesterday = new Date();
-  yesterday.setHours(yesterday.getHours() - KEEP_ALIVE);
-
-  // flags usued for sync with local storage
-  const _logTag = `vitamins_${config.namespace}_errors`;
-  const _crumbsTag = `vitamins_${config.namespace}_crumbs`;
-  const _meta = environment(config);
-  // crumbs older than the keep alive period (in hours) are removed on load
-  let _crumbs: BreadCrumb[] = JSON.parse(
-    localStorage.getItem(_crumbsTag) || '[]'
-  ).filter((l: BreadCrumb) => l.timestamp >= yesterday.toISOString());
-  // logs older than the keep alive period (in hours) are removed on load
-  let _logs: Node[] = JSON.parse(localStorage.getItem(_logTag) || '[]').filter(
-    (l: Node) => l.timestamp >= yesterday.toISOString()
+// Helper function used to create a unique sesson ID
+function uuid(): string {
+  return 'xxxxxxxxxx'.replace(/[x]/g, () =>
+    ((Math.random() * 16) | 0).toString(16)
   );
+}
 
-  // function to add a crumb to the internal list
-  function addCrumb(
-    message: string,
-    category: string,
-    metadata?: HashMap<MetaDataType>
-  ): void {
-    if (_crumbs.length >= MAX_NUM_BREADCRUMBS) _crumbs.pop();
-    const timestamp = new Date().toISOString();
-    logger(category, message, metadata);
-    _crumbs.unshift({ timestamp, message, category, metadata });
-  }
+function logger(tag = '', ...messages: Primitive[]): void {
+  console.log(
+    `%c[${new Date().toLocaleTimeString()}] ${tag.toUpperCase()}:`,
+    'color: fuchsia',
+    ...messages.filter((m) => m !== undefined)
+  );
+}
 
-  // function to create a new node for the logs and add it to the logs
-  function addNode(error: BaseError, tags?: string[]): void {
-    const node: Node = createNode(error, _meta.get(), tags);
+export default function tracker(
+  options: TrackerOptions,
+  initialNodes?: InitialNodes
+): Tracker {
+  // configurations set once the tracker is initiated
+  const sessionId: string = uuid();
+  const _env: HashMap<string> = {
+    agent: navigator.userAgent,
+    platform: navigator.platform,
+    language: navigator.language,
+    version: options.version,
+    namespace: options.namespace
+  };
 
-    if (_crumbs.length > 0)
-      node.breadcrumbs = _crumbs.slice(0, MAX_NUM_BREADCRUMBS_ATTACHED);
-
-    logger('error', node.error.message, node.error.stack);
-    _logs.unshift(node);
-  }
+  // The actual data of the tracker
+  let _logs: LogNode[] = initialNodes?.logs || [];
+  let _errors: ErrorNode[] = initialNodes?.errors || [];
 
   // Listener to window events for storing the logs
   window.addEventListener('beforeunload', function() {
-    localStorage.setItem(_logTag, JSON.stringify(_logs));
-    localStorage.setItem(_crumbsTag, JSON.stringify(_crumbs));
+    options.beforeUnload?.(_logs, _errors);
   });
+
+  // Clears the logs and errors
+  function clear(): void {
+    _logs = [];
+    _errors = [];
+  }
+
+  // function that creates a new log node
+  function addLogNode(message: string, tag: string, metadata?: any): void {
+    const timestamp = new Date().toISOString();
+    if (options.debug) logger(tag, message, metadata);
+    if (_logs.length >= (options.maxLogSize || 200)) _logs.pop();
+    _logs.unshift({ timestamp, message, tag, metadata, sessionId });
+    options.onChange?.(_logs, _errors);
+  }
+
+  // function that creates a new error node
+  function addErrorNode(error: Error, tags?: string[]): void {
+    const node: ErrorNode = {
+      timestamp: new Date().toISOString(),
+      sessionId,
+      error,
+      tags: tags || [],
+      environment: { ..._env, location: window.location.href },
+      crumbs: _logs.slice(0, options.numberOfCrumbsAttached || 10)
+    };
+
+    if (_errors.length >= (options.maxErrorSize || 50)) _errors.pop();
+    _errors.unshift(node);
+    addLogNode(node.error.message, 'error', { error: node });
+  }
 
   // Listeners to window events for capturation errors
   window.addEventListener('error', function(event) {
-    addNode(event.error, ['window']);
+    addErrorNode(event.error, ['window']);
   });
 
   // Listeners to window events for capturation errors
   window.addEventListener('unhandledrejection', function(event) {
     const error = new Error(JSON.stringify(event.reason));
-    addNode(error, ['promise']);
+    addErrorNode(error, ['promise']);
   });
 
   return {
-    crumb: addCrumb,
-    send: addNode,
-    clear(): void {
-      _logs = [];
-      _crumbs = [];
-    },
-    get crumbs(): BreadCrumb[] {
-      return _crumbs;
-    },
-    get errors(): Node[] {
-      return freeze([..._logs]);
-    }
+    error: addErrorNode,
+    log: addLogNode,
+    clear,
+    get: (): Storage => ({ logs: _logs, errors: _errors })
   };
 }

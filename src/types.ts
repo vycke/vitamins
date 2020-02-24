@@ -1,50 +1,47 @@
-export type MetaDataType = string | number | boolean | undefined;
-
-export interface BaseError extends Error {
-  status?: number;
-  type?: string;
-}
+export type Primitive = boolean | number | string | object | symbol | undefined;
 
 export type HashMap<T> = {
   [key: string]: T;
 };
 
-export type ErrorNode = {
-  name: string;
-  message: string;
-  stack?: string[];
-};
-
-export type BreadCrumb = {
-  category: string;
-  message: string;
-  timestamp: string;
-  metadata?: HashMap<MetaDataType>;
-};
-
-export type TrackerConfig = {
+export type TrackerOptions = {
   namespace: string;
   version: string;
+  debug: boolean;
+  numberOfCrumbsAttached?: number;
+  maxLogSize?: number;
+  maxErrorSize?: number;
+  beforeUnload?: Function;
+  onChange?: Function;
 };
 
-export type Node = {
-  timestamp: string;
-  error: ErrorNode;
-  tags?: string[];
-  breadcrumbs?: BreadCrumb[];
-  metadata?: HashMap<MetaDataType>;
+export type InitialNodes = {
+  logs: LogNode[];
+  errors: ErrorNode[];
 };
+
+export type LogNode = {
+  tag: string;
+  message: string;
+  timestamp: string;
+  sessionId?: string;
+  metadata?: HashMap<Primitive>;
+};
+
+export type ErrorNode = {
+  timestamp: string;
+  error: Error;
+  sessionId?: string;
+  tags?: string[];
+  environment?: HashMap<string>;
+  crumbs?: LogNode[];
+};
+
+export type Storage = { errors: ErrorNode[]; logs: LogNode[] };
 
 export type Tracker = {
-  crumb(message: string, category: string, meta?: HashMap<MetaDataType>): void;
-  send(error: Error, tags?: string[]): void;
+  log(message: string, tag: string, metadata?: any): void;
+  error(error: Error, tags?: string[]): void;
   clear(): void;
-  errors: Node[];
-  crumbs: BreadCrumb[];
+  get(): Storage;
 };
-
-export type Environment = {
-  get(): HashMap<MetaDataType>;
-};
-
-export type Arg = number | string | boolean | symbol | object | undefined;
