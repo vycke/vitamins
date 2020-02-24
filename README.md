@@ -105,6 +105,17 @@ class ErrorBoundary extends React.Component {
 export default ErrorBoundary;
 ```
 
+### Example usage
+
+Some examples on how the system tracker can be used to measure the reliability of of your application;
+
+- Capturing all errors with uniform tags (e.g. HTTP status code, was it a request, GraphQL query/mutation, etc). With the added metadata, you can analyse which errors occurs when, how often and how critical they are;
+- Page navigation to gather usage statistics;
+- Outgoing requests, including request name, and request size;
+- Incoming responses, including request name, response size, and response time (use `performance.now()`);
+- When data is retrieved from cache instead of sending a request (to measure the effectiveness of your cache);
+- When critical core-features are used (e.g. session management is updated, your Pub/Sub is used, etc).
+
 ## Reliability helpers
 
 Performance is very important for your application, but more importantly, for your users. There exists many ways to improve the performance, but some helper functions can get you a long way. Vitamins comes with several of these functions.
@@ -119,5 +130,3 @@ Sometimes you will find yourself in a situation where a partical function is bei
 ### Memory size
 
 The `memorySizeOf()` function calculates the estimated size in bytes of variables and objects for keeping them in memory. It can take any type of value as input and calculates memory for `object`, `string`, `number`, `boolean`.
-
-## AJAX requests
