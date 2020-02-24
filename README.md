@@ -6,7 +6,7 @@
 [![Minified size](https://img.shields.io/bundlephobia/min/vitamins?label=minified)](https://www.npmjs.com/package/vitamins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Vitamins is a smalls dependency free front-end library that can help you take control over your application reliability and health. It core features are a uniform logger, a system tracker for logs and errors, some helper functions around performance, and a wrapper to ensure stable an consistent AJAX requests. Combined, they give you control to analyze and improve your front-end application.
+Vitamins is a smalls dependency free front-end library that can help you take control over your application reliability and health. It core features are a uniform logger, a system tracker for logs and errors and some helper functions around performance Combined, they give you control to analyze and improve your front-end application.
 
 ## The system tracker
 

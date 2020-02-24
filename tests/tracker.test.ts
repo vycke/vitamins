@@ -215,3 +215,14 @@ describe('tracker features', () => {
     expect(tracker.get().errors.length).toBe(0);
   });
 });
+
+it('debug mode', () => {
+  const spy = jest.spyOn(console, 'log').mockImplementation();
+  jest.resetModules(); // this is important - it clears the cache
+
+  const myTracker = createTracker({ ...config, debug: true });
+  expect(console.log).toHaveBeenCalledTimes(0);
+  myTracker.log('test', 'test');
+  expect(console.log).toHaveBeenCalledTimes(1);
+  spy.mockRestore();
+});

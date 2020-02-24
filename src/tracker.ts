@@ -16,7 +16,7 @@ function uuid(): string {
   );
 }
 
-function logger(tag = '', ...messages: Primitive[]): void {
+function logger(tag, ...messages: Primitive[]): void {
   console.log(
     `%c[${new Date().toLocaleTimeString()}] ${tag.toUpperCase()}:`,
     'color: fuchsia',
