@@ -90,7 +90,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    myTracker.log(error);
+    myTracker.error(error);
   }
 
   render() {
