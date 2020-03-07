@@ -97,6 +97,7 @@ describe('window events', () => {
       })
     );
     expect(tracker.get().errors.length).toBe(1);
+    expect(tracker.get().errors[0].error.message).toBe('AAAHHHH');
   });
 
   it('Throw error in window', () => {

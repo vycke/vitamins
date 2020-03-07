@@ -67,7 +67,11 @@ export default function tracker(
     const node: ErrorNode = {
       timestamp: new Date().toISOString(),
       sessionId,
-      error,
+      error: {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      },
       tags: tags || [],
       environment: { ..._env, location: window.location.href },
       crumbs: _logs.slice(0, options.numberOfCrumbsAttached || 10)
