@@ -6,7 +6,7 @@ const config = {
   namespace: 'test'
 };
 
-const logs = [
+const actions = [
   {
     timestamp: '1970-01-01T00:00:00.000Z',
     message: 'test',
@@ -65,10 +65,10 @@ const mockFn = jest.fn((x) => x);
 it('using the initial-nodes and before-unload', () => {
   const tracker = createTracker(
     { ...config, beforeUnload: mockFn },
-    { logs, errors }
+    { actions, errors }
   );
 
-  expect(tracker.get().logs.length).toBe(2);
+  expect(tracker.get().actions.length).toBe(2);
   expect(tracker.get().errors.length).toBe(2);
 
   expect(mockFn.mock.calls.length).toBe(0);
@@ -76,13 +76,11 @@ it('using the initial-nodes and before-unload', () => {
   expect(mockFn.mock.calls.length).toBe(1);
 });
 
-it('onChange callback option', () => {
-  const tracker = createTracker({ ...config, onChange: mockFn });
+it('onError callback option', () => {
+  const tracker = createTracker({ ...config, onError: mockFn });
   expect(mockFn.mock.calls.length).toBe(1);
-  tracker.log('test', 'test');
+  tracker.error(new Error('test'), ['test']);
   expect(mockFn.mock.calls.length).toBe(2);
-  tracker.clear();
-  expect(mockFn.mock.calls.length).toBe(3);
 });
 
 // window events handlers
@@ -116,15 +114,15 @@ describe('window events', () => {
 });
 
 describe('tracker configuration', () => {
-  it('default max number of logs ', () => {
+  it('default max number of actions ', () => {
     const tracker = createTracker(config);
     for (let i = 0; i < 202; i++) {
-      tracker.log(i.toString(), 'UI');
-      if (i + 1 <= 200) expect(tracker.get().logs.length).toBe(i + 1);
-      else expect(tracker.get().logs.length).toBe(200);
+      tracker.action(i.toString(), 'UI');
+      if (i + 1 <= 200) expect(tracker.get().actions.length).toBe(i + 1);
+      else expect(tracker.get().actions.length).toBe(200);
     }
 
-    expect(tracker.get().logs[0].message).toBe('201');
+    expect(tracker.get().actions[0].message).toBe('201');
   });
 
   it('default max number of errors', () => {
@@ -134,22 +132,19 @@ describe('tracker configuration', () => {
       if (i + 1 <= 50) expect(tracker.get().errors.length).toBe(i + 1);
       else expect(tracker.get().errors.length).toBe(50);
     }
-
-    expect(tracker.get().logs[0].message).toBe('51');
   });
 
-  it('custom number of logs & errors', () => {
+  it('custom number of actions & errors', () => {
     const tracker = createTracker({
       ...config,
-      maxLogSize: 1,
-      maxErrorSize: 1
+      maxNumberOfActions: 1,
+      maxNumberOfErrors: 1
     });
     tracker.error(new Error('1'));
     tracker.error(new Error('2'));
 
-    expect(tracker.get().logs.length).toBe(1);
+    expect(tracker.get().actions.length).toBe(0);
     expect(tracker.get().errors.length).toBe(1);
-    expect(tracker.get().logs[0].message).toBe('2');
   });
 });
 
@@ -160,57 +155,57 @@ describe('tracker features', () => {
   });
 
   it('init', () => {
-    expect(tracker.get().logs).toEqual([]);
+    expect(tracker.get().actions).toEqual([]);
     expect(tracker.get().errors).toEqual([]);
   });
 
-  it('logs', () => {
-    tracker.log('test log', 'UI');
-    expect(tracker.get().logs.length).toBe(1);
-    tracker.log('test log', 'Network', { test: 'test' });
-    expect(tracker.get().logs.length).toBe(2);
+  it('actions', () => {
+    tracker.action('test log', 'UI');
+    expect(tracker.get().actions.length).toBe(1);
+    tracker.action('test log', 'Network', { test: 'test' });
+    expect(tracker.get().actions.length).toBe(2);
   });
 
   it('error with no tags', () => {
-    tracker.log('test crumb', 'UI');
-    expect(tracker.get().logs.length).toBe(1);
+    tracker.action('test crumb', 'UI');
+    expect(tracker.get().actions.length).toBe(1);
     const error = new Error('test');
     tracker.error(error);
-    expect(tracker.get().logs.length).toBe(2);
+    expect(tracker.get().actions.length).toBe(1);
     expect(tracker.get().errors.length).toBe(1);
   });
 
   it('error with tags and crumbs', () => {
-    tracker.log('test crumb', 'UI');
-    expect(tracker.get().logs.length).toBe(1);
+    tracker.action('test crumb', 'UI');
+    expect(tracker.get().actions.length).toBe(1);
     const error = new Error('test');
     tracker.error(error, ['UI']);
-    expect(tracker.get().logs.length).toBe(2);
+    expect(tracker.get().actions.length).toBe(1);
     expect(tracker.get().errors.length).toBe(1);
-    expect(tracker.get().errors[0].crumbs.length).toBe(1);
+    expect(tracker.get().errors[0].actions.length).toBe(1);
     expect(tracker.get().errors[0].tags.length).toBe(1);
   });
 
   it('error without tags and crumbs', () => {
-    expect(tracker.get().logs.length).toBe(0);
+    expect(tracker.get().actions.length).toBe(0);
     expect(tracker.get().errors.length).toBe(0);
     const error = new Error('test');
     tracker.error(error);
-    expect(tracker.get().logs.length).toBe(1);
+    expect(tracker.get().actions.length).toBe(0);
     expect(tracker.get().errors.length).toBe(1);
   });
 
   it('too many crumbs', () => {
     for (let i = 0; i < 202; i++) {
-      tracker.log(i.toString(), 'UI');
-      if (i + 1 <= 200) expect(tracker.get().logs.length).toBe(i + 1);
-      else expect(tracker.get().logs.length).toBe(200);
+      tracker.action(i.toString(), 'UI');
+      if (i + 1 <= 200) expect(tracker.get().actions.length).toBe(i + 1);
+      else expect(tracker.get().actions.length).toBe(200);
     }
 
-    expect(tracker.get().logs[0].message).toBe('201');
+    expect(tracker.get().actions[0].message).toBe('201');
   });
 
-  it('clear logs', () => {
+  it('clear actions', () => {
     const error = new Error('test');
     tracker.error(error, ['UI']);
     expect(tracker.get().errors.length).toBe(1);
@@ -225,7 +220,9 @@ it('debug mode', () => {
 
   const myTracker = createTracker({ ...config, debug: true });
   expect(console.log).toHaveBeenCalledTimes(0);
-  myTracker.log('test', 'test');
+  myTracker.action('test', 'test');
   expect(console.log).toHaveBeenCalledTimes(1);
+  myTracker.error(new Error('test'));
+  expect(console.log).toHaveBeenCalledTimes(2);
   spy.mockRestore();
 });

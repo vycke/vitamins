@@ -1,11 +1,10 @@
 import {
-  LogNode,
+  ActionNode,
   Tracker,
   ErrorNode,
   HashMap,
   TrackerOptions,
-  InitialNodes,
-  Storage,
+  Logs,
   Primitive
 } from './types';
 
@@ -26,7 +25,7 @@ function logger(tag, ...messages: Primitive[]): void {
 
 export default function tracker(
   options: TrackerOptions,
-  initialNodes?: InitialNodes
+  initialNodes?: Logs
 ): Tracker {
   // configurations set once the tracker is initiated
   const sessionId: string = uuid();
@@ -39,32 +38,30 @@ export default function tracker(
   };
 
   // The actual data of the tracker
-  let _logs: LogNode[] = initialNodes?.logs || [];
+  let _actions: ActionNode[] = initialNodes?.actions || [];
   let _errors: ErrorNode[] = initialNodes?.errors || [];
 
   // Listener to window events for storing the logs
   window.addEventListener('beforeunload', function() {
-    options.beforeUnload?.(_logs, _errors);
+    options.beforeUnload?.(_errors, _actions);
   });
 
   // Clears the logs and errors
   function clear(): void {
-    _logs = [];
+    _actions = [];
     _errors = [];
-    options.onChange?.(_logs, _errors);
   }
 
-  // function that creates a new log node
-  function addLogNode(message: string, tag: string, metadata?: any): void {
+  // function that creates a new action node
+  function addAction(message: string, tag: string, metadata?: any): void {
     const timestamp = new Date().toISOString();
     if (options.debug) logger(tag, message, metadata);
-    if (_logs.length >= (options.maxLogSize || 200)) _logs.pop();
-    _logs.unshift({ timestamp, message, tag, metadata, sessionId });
-    options.onChange?.(_logs, _errors);
+    if (_actions.length >= (options.maxNumberOfActions || 200)) _actions.pop();
+    _actions.unshift({ timestamp, message, tag, metadata, sessionId });
   }
 
   // function that creates a new error node
-  function addErrorNode(error: Error, tags?: string[]): void {
+  function addError(error: Error, tags?: string[]): void {
     const node: ErrorNode = {
       timestamp: new Date().toISOString(),
       sessionId,
@@ -75,29 +72,30 @@ export default function tracker(
       },
       tags: tags || [],
       environment: { ..._env, location: window.location.href },
-      crumbs: _logs.slice(0, options.numberOfCrumbsAttached || 10)
+      actions: _actions.slice(0, 10)
     };
 
-    if (_errors.length >= (options.maxErrorSize || 50)) _errors.pop();
+    if (_errors.length >= (options.maxNumberOfErrors || 50)) _errors.pop();
     _errors.unshift(node);
-    addLogNode(node.error.message, 'error');
+    options.onError?.(_errors, _actions);
+    if (options.debug) logger('error', node);
   }
 
   // Listeners to window events for capturation errors
   window.addEventListener('error', function(event) {
-    addErrorNode(event.error, ['window']);
+    addError(event.error, ['window']);
   });
 
   // Listeners to window events for capturation errors
   window.addEventListener('unhandledrejection', function(event) {
     const error = new Error(JSON.stringify(event.reason));
-    addErrorNode(error, ['promise']);
+    addError(error, ['promise']);
   });
 
   return {
-    error: addErrorNode,
-    log: addLogNode,
+    error: addError,
+    action: addAction,
     clear,
-    get: (): Storage => ({ logs: _logs, errors: _errors })
+    get: (): Logs => ({ actions: _actions, errors: _errors })
   };
 }

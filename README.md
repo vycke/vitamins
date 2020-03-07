@@ -17,39 +17,38 @@ You create a system tracker object by using the `tracker` function for the packa
 ```js
 import { tracker } from 'vitamins';
 const myTracker = tracker(options, init?);
-myTracker.log('my log message', 'test');
+myTracker.action('my action message', 'test');
 ```
 
 the `options` is an object that can have the following attributes. From these attributes, `namespace` and `version` are required.
 
 - `namespace: string`: your application name. Will be attached to errors as `metadata`;
 - `version: string`: your application version number. Will be attached to errors as `metadata`;
-- `debug: boolean`: when this is `true`, every log is also printed to the `console.log` for easy debugging;
-- `maxLogSize?: number`: the maximum number of log nodes stored in memory. Default is 200;
-- `maxErrorSize?: number`: the maximum number of error nodes stored in memory. Default is 50;
-- `numberOfCrumbsAttached?: number`: the number of log nodes attached to an error as a breadcrumb trail. default is 10;
-- `beforeUnload(logs, errors)?: function`: a function that is executed right before `window.onbeforeunload` event is triggered;
-- `onChange(logs, errors)?: function`: a function that is executed on every change in the logs and errors.
+- `debug: boolean`: when this is `true`, every action is also printed to the `console.log` for easy debugging;
+- `maxNumberOfActions?: number`: the maximum number of action nodes stored in memory. Default is 200;
+- `maxNumberOfErrors?: number`: the maximum number of error nodes stored in memory. Default is 50;
+- `beforeUnload(errors, actions)?: function`: a function that is executed right before `window.onbeforeunload` event is triggered;
+- `onError(errors, actions)?: function`: a function that is executed on every change in the errors.
 
-Optionally, you can provide initial logs and errors as well. This can be useful when you store them in the `localStorage` and you want to load them in memory on start. This is an object of the structure `{ logs, errors }`.
+Optionally, you can provide initial logs and errors as well. This can be useful when you store them in the `localStorage` and you want to load them in memory on start. This is an object of the structure `{ actions, errors }`.
 
 ### Using the tracker
 
 When initialized, the `tracker` function gives back an object with the following properties:
 
-- `log(message: string, tag: string, metadata?: any)`: stores a new log node in memory;
-- `error(error: Error, tags?: string[])`: creates and stores an error node in memory. A log node is created as well. Optionally, you can add an array of tags. Some example tags are: 'request', '404', '503' etc.;
-- `clear()`: removes all logs and errors from memory;
-- `get()`: gives back an object (`{ logs, errors }`) with all logs and errors currently in memory.
+- `action(message: string, tag: string, metadata?: any)`: stores a new action node in memory;
+- `error(error: Error, tags?: string[])`: creates and stores an error node in memory. An action node is created as well. Optionally, you can add an array of tags. Some example tags are: 'request', '404', '503' etc.;
+- `clear()`: removes the entire log (actions and errors) from memory;
+- `get()`: gives back an object (`{ actions, errors }`) with the current logs from memory.
 
 By default, the `tracker` function captures and logs all `error` and `unhandledrejection` events on `window` level.
 
 ### Data structures
 
-A log node and error node have the following structures:
+An action node and error node have the following structures:
 
 ```ts
-type LogNode = {
+type ActionNode = {
   tag: string;
   message: string;
   timestamp: string;
