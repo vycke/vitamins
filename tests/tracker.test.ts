@@ -81,6 +81,8 @@ it('onChange callback option', () => {
   expect(mockFn.mock.calls.length).toBe(1);
   tracker.log('test', 'test');
   expect(mockFn.mock.calls.length).toBe(2);
+  tracker.clear();
+  expect(mockFn.mock.calls.length).toBe(3);
 });
 
 // window events handlers

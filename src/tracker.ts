@@ -51,6 +51,7 @@ export default function tracker(
   function clear(): void {
     _logs = [];
     _errors = [];
+    options.onChange?.(_logs, _errors);
   }
 
   // function that creates a new log node
