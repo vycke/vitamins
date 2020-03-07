@@ -75,7 +75,7 @@ export default function tracker(
 
     if (_errors.length >= (options.maxErrorSize || 50)) _errors.pop();
     _errors.unshift(node);
-    addLogNode(node.error.message, 'error', { error: node });
+    addLogNode(node.error.message, 'error');
   }
 
   // Listeners to window events for capturation errors
