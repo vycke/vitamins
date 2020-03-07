@@ -37,7 +37,7 @@ Optionally, you can provide initial logs and errors as well. This can be useful 
 When initialized, the `tracker` function gives back an object with the following properties:
 
 - `action(message: string, tag: string, metadata?: any)`: stores a new action node in memory;
-- `error(error: Error, tags?: string[])`: creates and stores an error node in memory. An action node is created as well. Optionally, you can add an array of tags. Some example tags are: 'request', '404', '503' etc.;
+- `error(error: Error, tags?: string[])`: creates and stores an error node in memory. Optionally, you can add an array of tags. Some example tags are: 'request', '404', '503' etc.;
 - `clear()`: removes the entire log (actions and errors) from memory;
 - `get()`: gives back an object (`{ actions, errors }`) with the current logs from memory.
 
