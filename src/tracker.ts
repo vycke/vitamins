@@ -41,11 +41,6 @@ export default function tracker(
   let _actions: ActionNode[] = initialNodes?.actions || [];
   let _errors: ErrorNode[] = initialNodes?.errors || [];
 
-  // Listener to window events for storing the logs
-  window.addEventListener('beforeunload', function() {
-    options.beforeUnload?.(_errors, _actions);
-  });
-
   // Clears the logs and errors
   function clear(): void {
     _actions = [];
@@ -56,7 +51,6 @@ export default function tracker(
   function addAction(message: string, tag: string, metadata?: any): void {
     const timestamp = new Date().toISOString();
     if (options.debug) logger(tag, message, metadata);
-    if (_actions.length >= (options.maxNumberOfActions || 200)) _actions.pop();
     _actions.unshift({ timestamp, message, tag, metadata, sessionId });
   }
 
@@ -72,10 +66,9 @@ export default function tracker(
       },
       tags: tags || [],
       environment: { ..._env, location: window.location.href },
-      actions: _actions.slice(0, 10)
+      actions: _actions.slice(0, options.numberOfActions || 10)
     };
 
-    if (_errors.length >= (options.maxNumberOfErrors || 50)) _errors.pop();
     _errors.unshift(node);
     options.onError?.(_errors, _actions);
     if (options.debug) logger('error', node);

@@ -10,10 +10,8 @@ export type TrackerOptions = {
   namespace: string;
   version: string;
   debug: boolean;
-  maxNumberOfActions?: number;
-  maxNumberOfErrors?: number;
-  beforeUnload?: CallbackFunction;
-  onError?: CallableFunction;
+  numberOfActions?: number;
+  onError?: CallbackFunction;
 };
 
 export type Logs = {

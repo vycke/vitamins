@@ -25,12 +25,10 @@ the `options` is an object that can have the following attributes. From these at
 - `namespace: string`: your application name. Will be attached to errors as `metadata`;
 - `version: string`: your application version number. Will be attached to errors as `metadata`;
 - `debug: boolean`: when this is `true`, every action is also printed to the `console.log` for easy debugging;
-- `maxNumberOfActions?: number`: the maximum number of action nodes stored in memory. Default is 200;
-- `maxNumberOfErrors?: number`: the maximum number of error nodes stored in memory. Default is 50;
-- `beforeUnload(errors, actions)?: function`: a function that is executed right before `window.onbeforeunload` event is triggered;
+- `numberOfActions?: number`: the maximum number of action nodes attached to an error. Default is 10;
 - `onError(errors, actions)?: function`: a function that is executed on every change in the errors.
 
-Optionally, you can provide initial logs and errors as well. This can be useful when you store them in the `localStorage` and you want to load them in memory on start. This is an object of the structure `{ actions, errors }`.
+Optionally, you can provide initial logs and errors as well. This can be useful when you store them in the `localStorage` and you want to load them in memory on start. This is an object of the structure `{ errors, actions }`.
 
 ### Using the tracker
 

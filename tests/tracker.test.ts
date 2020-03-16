@@ -62,25 +62,18 @@ const mockFn = jest.fn((x) => x);
  *
  */
 
-it('using the initial-nodes and before-unload', () => {
-  const tracker = createTracker(
-    { ...config, beforeUnload: mockFn },
-    { actions, errors }
-  );
+it('using the initial-nodes', () => {
+  const tracker = createTracker(config, { actions, errors });
 
   expect(tracker.get().actions.length).toBe(2);
   expect(tracker.get().errors.length).toBe(2);
-
-  expect(mockFn.mock.calls.length).toBe(0);
-  window.dispatchEvent(new Event('beforeunload'));
-  expect(mockFn.mock.calls.length).toBe(1);
 });
 
 it('onError callback option', () => {
   const tracker = createTracker({ ...config, onError: mockFn });
-  expect(mockFn.mock.calls.length).toBe(1);
+  expect(mockFn.mock.calls.length).toBe(0);
   tracker.error(new Error('test'), ['test']);
-  expect(mockFn.mock.calls.length).toBe(2);
+  expect(mockFn.mock.calls.length).toBe(1);
 });
 
 // window events handlers
@@ -115,36 +108,14 @@ describe('window events', () => {
 
 describe('tracker configuration', () => {
   it('default max number of actions ', () => {
-    const tracker = createTracker(config);
-    for (let i = 0; i < 202; i++) {
+    const tracker = createTracker({ ...config, numberOfActions: 20 });
+    for (let i = 0; i < 30; i++) {
       tracker.action(i.toString(), 'UI');
-      if (i + 1 <= 200) expect(tracker.get().actions.length).toBe(i + 1);
-      else expect(tracker.get().actions.length).toBe(200);
+      expect(tracker.get().actions.length).toBe(i + 1);
     }
-
-    expect(tracker.get().actions[0].message).toBe('201');
-  });
-
-  it('default max number of errors', () => {
-    const tracker = createTracker(config);
-    for (let i = 0; i < 52; i++) {
-      tracker.error(new Error(i.toString()));
-      if (i + 1 <= 50) expect(tracker.get().errors.length).toBe(i + 1);
-      else expect(tracker.get().errors.length).toBe(50);
-    }
-  });
-
-  it('custom number of actions & errors', () => {
-    const tracker = createTracker({
-      ...config,
-      maxNumberOfActions: 1,
-      maxNumberOfErrors: 1
-    });
-    tracker.error(new Error('1'));
-    tracker.error(new Error('2'));
-
-    expect(tracker.get().actions.length).toBe(0);
-    expect(tracker.get().errors.length).toBe(1);
+    tracker.error(new Error('test'));
+    const a = tracker.get().errors[0].actions;
+    if (a) expect(a.length).toBe(20);
   });
 });
 
@@ -193,16 +164,6 @@ describe('tracker features', () => {
     tracker.error(error);
     expect(tracker.get().actions.length).toBe(0);
     expect(tracker.get().errors.length).toBe(1);
-  });
-
-  it('too many crumbs', () => {
-    for (let i = 0; i < 202; i++) {
-      tracker.action(i.toString(), 'UI');
-      if (i + 1 <= 200) expect(tracker.get().actions.length).toBe(i + 1);
-      else expect(tracker.get().actions.length).toBe(200);
-    }
-
-    expect(tracker.get().actions[0].message).toBe('201');
   });
 
   it('clear actions', () => {
