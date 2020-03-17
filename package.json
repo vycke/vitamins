@@ -1,6 +1,6 @@
 {
   "name": "vitamins",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Error & health tracking, with performance helpers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

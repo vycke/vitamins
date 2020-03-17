@@ -30,15 +30,15 @@ export type ActionNode = {
 export type ErrorNode = {
   timestamp: string;
   error: Error;
+  tag: string;
   sessionId?: string;
-  tags?: string[];
-  environment?: HashMap<string>;
+  metadata?: HashMap<Primitive>;
   actions?: ActionNode[];
 };
 
 export type Tracker = {
   action(message: string, tag: string, metadata?: any): void;
-  error(error: Error, tags?: string[]): void;
+  error(error: Error, tag: string, metadata?: any): void;
   clear(): void;
   get(): Logs;
 };

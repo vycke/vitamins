@@ -26,7 +26,7 @@ const errors = [
       name: 'type_error',
       message: 'test error'
     },
-    tags: ['UI']
+    tag: 'UI'
   },
   {
     timestamp: new Date().toISOString(),
@@ -34,7 +34,7 @@ const errors = [
       name: 'type_error',
       message: 'test error'
     },
-    tags: ['UI']
+    tag: 'UI'
   }
 ];
 
@@ -72,7 +72,7 @@ it('using the initial-nodes', () => {
 it('onError callback option', () => {
   const tracker = createTracker({ ...config, onError: mockFn });
   expect(mockFn.mock.calls.length).toBe(0);
-  tracker.error(new Error('test'), ['test']);
+  tracker.error(new Error('test'), 'test');
   expect(mockFn.mock.calls.length).toBe(1);
 });
 
@@ -113,7 +113,7 @@ describe('tracker configuration', () => {
       tracker.action(i.toString(), 'UI');
       expect(tracker.get().actions.length).toBe(i + 1);
     }
-    tracker.error(new Error('test'));
+    tracker.error(new Error('test'), 'test');
     const a = tracker.get().errors[0].actions;
     if (a) expect(a.length).toBe(20);
   });
@@ -146,15 +146,17 @@ describe('tracker features', () => {
     expect(tracker.get().errors.length).toBe(1);
   });
 
-  it('error with tags and crumbs', () => {
+  it('error with tags crumbs and metadata', () => {
     tracker.action('test crumb', 'UI');
     expect(tracker.get().actions.length).toBe(1);
     const error = new Error('test');
-    tracker.error(error, ['UI']);
+    tracker.error(error, 'UI');
     expect(tracker.get().actions.length).toBe(1);
     expect(tracker.get().errors.length).toBe(1);
     expect(tracker.get().errors[0].actions.length).toBe(1);
-    expect(tracker.get().errors[0].tags.length).toBe(1);
+    tracker.error(error, 'UI', { name: 'test' });
+    expect(tracker.get().errors.length).toBe(2);
+    expect(tracker.get().errors[0].metadata.name).toBe('test');
   });
 
   it('error without tags and crumbs', () => {
@@ -183,7 +185,7 @@ it('debug mode', () => {
   expect(console.log).toHaveBeenCalledTimes(0);
   myTracker.action('test', 'test');
   expect(console.log).toHaveBeenCalledTimes(1);
-  myTracker.error(new Error('test'));
+  myTracker.error(new Error('test'), 'test');
   expect(console.log).toHaveBeenCalledTimes(2);
   spy.mockRestore();
 });

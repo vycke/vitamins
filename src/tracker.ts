@@ -55,7 +55,7 @@ export default function tracker(
   }
 
   // function that creates a new error node
-  function addError(error: Error, tags?: string[]): void {
+  function addError(error: Error, tag: string, metadata?: any): void {
     const node: ErrorNode = {
       timestamp: new Date().toISOString(),
       sessionId,
@@ -64,8 +64,12 @@ export default function tracker(
         name: error.name,
         stack: error.stack
       },
-      tags: tags || [],
-      environment: { ..._env, location: window.location.href },
+      tag,
+      metadata: {
+        ..._env,
+        location: window.location.href,
+        ...(metadata && { ...metadata })
+      },
       actions: _actions.slice(0, options.numberOfActions || 10)
     };
 
@@ -76,13 +80,13 @@ export default function tracker(
 
   // Listeners to window events for capturation errors
   window.addEventListener('error', function(event) {
-    addError(event.error, ['window']);
+    addError(event.error, 'window');
   });
 
   // Listeners to window events for capturation errors
   window.addEventListener('unhandledrejection', function(event) {
     const error = new Error(JSON.stringify(event.reason));
-    addError(error, ['promise']);
+    addError(error, 'promise');
   });
 
   return {
