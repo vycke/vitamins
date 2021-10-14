@@ -1,9 +1,9 @@
 # Vitamins - JavaScript system tracking libary
 
-![](https://github.com/kevtiq/vitamins/workflows/test/badge.svg)
-[![Node version](https://img.shields.io/npm/v/vitamins.svg?style=flat)](https://www.npmjs.com/package/vitamins)
-[![NPM Downloads](https://img.shields.io/npm/dm/vitamins.svg?style=flat)](https://www.npmjs.com/package/vitamins)
-[![Minified size](https://img.shields.io/bundlephobia/min/vitamins?label=minified)](https://www.npmjs.com/package/vitamins)
+![](https://github.com/crinklesio/vitamins/workflows/test/badge.svg)
+[![Node version](https://img.shields.io/npm/v/@crinkles/vitamins.svg?style=flat)](https://www.npmjs.com/package/vitamins)
+[![NPM Downloads](https://img.shields.io/npm/dm/@crinkles/vitamins.svg?style=flat)](https://www.npmjs.com/package/vitamins)
+[![Minified size](https://img.shields.io/bundlephobia/min/@crinkles/vitamins?label=minified)](https://www.npmjs.com/package/vitamins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Vitamins is a smalls dependency free front-end library that can help you take control over your application reliability and health. It core features are a uniform logger, a system tracker for logs and errors and some helper functions around performance Combined, they give you control to analyze and improve your front-end application.
