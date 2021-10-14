@@ -2,10 +2,9 @@ import {
   ActionNode,
   Tracker,
   ErrorNode,
-  HashMap,
   TrackerOptions,
-  Logs,
-  Primitive
+  O,
+  Primitive,
 } from './types';
 
 // Helper function used to create a unique sesson ID
@@ -15,7 +14,7 @@ function uuid(): string {
   );
 }
 
-function logger(tag, ...messages: Primitive[]): void {
+function logger(tag: string, ...messages: Primitive[]): void {
   console.log(
     `%c[${new Date().toLocaleTimeString()}] ${tag.toUpperCase()}:`,
     'color: fuchsia',
@@ -23,68 +22,45 @@ function logger(tag, ...messages: Primitive[]): void {
   );
 }
 
-export default function tracker(
-  options: TrackerOptions,
-  initialNodes?: Logs
-): Tracker {
+export default function tracker(options: TrackerOptions): Tracker {
   // configurations set once the tracker is initiated
   const sessionId: string = uuid();
-  const _env: HashMap<string> = {
-    agent: navigator.userAgent,
-    platform: navigator.platform,
-    language: navigator.language,
-    version: options.version,
-    namespace: options.namespace
-  };
-
   // The actual data of the tracker
-  let _actions: ActionNode[] = initialNodes?.actions || [];
-  let _errors: ErrorNode[] = initialNodes?.errors || [];
-
-  // Clears the logs and errors
-  function clear(): void {
-    _actions = [];
-    _errors = [];
-  }
+  const _actions: ActionNode[] = [];
 
   // function that creates a new action node
-  function addAction(message: string, tag: string, metadata?: any): void {
+  function addAction(message: string, tag: string, metadata?: O): void {
     const timestamp = new Date().toISOString();
     if (options.debug) logger(tag, message, metadata);
-    _actions.unshift({ timestamp, message, tag, metadata, sessionId });
+    _actions.unshift({ timestamp, message, tag });
   }
 
   // function that creates a new error node
-  function addError(error: Error, tag: string, metadata?: any): void {
+  function addError(error: Error, tag: string): void {
     const node: ErrorNode = {
       timestamp: new Date().toISOString(),
       sessionId,
-      error: {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      },
+      error: { message: error.message, name: error.name, stack: error.stack },
       tag,
-      metadata: {
-        ..._env,
-        location: window.location.href,
-        ...(metadata && { ...metadata })
-      },
-      actions: _actions.slice(0, options.numberOfActions || 10)
+      actions: _actions.slice(0, 10),
+      location: window.location.href,
+      agent: navigator.userAgent,
+      vendor: navigator.vendor,
+      language: navigator.language,
+      version: options.version,
     };
 
-    _errors.unshift(node);
-    options.onError?.(_errors, _actions);
     if (options.debug) logger('error', node);
+    options.onError?.(node);
   }
 
   // Listeners to window events for capturation errors
-  window.addEventListener('error', function(event) {
+  window.addEventListener('error', function (event) {
     addError(event.error, 'window');
   });
 
   // Listeners to window events for capturation errors
-  window.addEventListener('unhandledrejection', function(event) {
+  window.addEventListener('unhandledrejection', function (event) {
     const error = new Error(JSON.stringify(event.reason));
     addError(error, 'promise');
   });
@@ -92,7 +68,6 @@ export default function tracker(
   return {
     error: addError,
     action: addAction,
-    clear,
-    get: (): Logs => ({ actions: _actions, errors: _errors })
+    get: (): ActionNode[] => _actions,
   };
 }

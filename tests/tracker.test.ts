@@ -1,42 +1,14 @@
 import createTracker from '../src/tracker';
+import { Tracker } from '../src/types';
+
+const mockFn = jest.fn((a) => a);
 
 const config = {
   version: '1.0',
   debug: false,
-  namespace: 'test'
+  namespace: 'test',
+  onError: mockFn,
 };
-
-const actions = [
-  {
-    timestamp: '1970-01-01T00:00:00.000Z',
-    message: 'test',
-    tag: 'test'
-  },
-  {
-    timestamp: new Date().toISOString(),
-    message: 'test',
-    tag: 'test'
-  }
-];
-
-const errors = [
-  {
-    timestamp: '1970-01-01T00:00:00.000Z',
-    error: {
-      name: 'type_error',
-      message: 'test error'
-    },
-    tag: 'UI'
-  },
-  {
-    timestamp: new Date().toISOString(),
-    error: {
-      name: 'type_error',
-      message: 'test error'
-    },
-    tag: 'UI'
-  }
-];
 
 // add this interface
 interface ErrorEventInit {
@@ -53,24 +25,13 @@ declare let ErrorEvent: {
   new (type: string, eventInitDict?: ErrorEventInit): ErrorEvent;
   prototype: ErrorEvent;
 };
-
-const mockFn = jest.fn((x) => x);
-
 /**
  *
  * Actual beginning of the tests
  *
  */
-
-it('using the initial-nodes', () => {
-  const tracker = createTracker(config, { actions, errors });
-
-  expect(tracker.get().actions.length).toBe(2);
-  expect(tracker.get().errors.length).toBe(2);
-});
-
 it('onError callback option', () => {
-  const tracker = createTracker({ ...config, onError: mockFn });
+  const tracker = createTracker(config);
   expect(mockFn.mock.calls.length).toBe(0);
   tracker.error(new Error('test'), 'test');
   expect(mockFn.mock.calls.length).toBe(1);
@@ -79,101 +40,72 @@ it('onError callback option', () => {
 // window events handlers
 describe('window events', () => {
   it('Throw error in window', () => {
-    const tracker = createTracker(config);
+    createTracker(config);
     window.dispatchEvent(
       new ErrorEvent('error', {
         error: new Error('AAAHHHH'),
         message: 'A monkey is throwing bananas at me!',
         lineno: 402,
         colno: 1,
-        filename: 'closet.html'
+        filename: 'closet.html',
       })
     );
-    expect(tracker.get().errors.length).toBe(1);
-    expect(tracker.get().errors[0].error.message).toBe('AAAHHHH');
+    expect(mockFn.mock.calls.length).toBe(3);
   });
 
   it('Throw error in window', () => {
-    const tracker = createTracker(config);
+    createTracker(config);
     window.dispatchEvent(new Event('unhandledrejection'));
-    expect(tracker.get().errors.length).toBe(1);
+    expect(mockFn.mock.calls.length).toBe(6);
   });
 
   it('Unload without callback', () => {
-    const tracker = createTracker(config);
+    createTracker(config);
     window.dispatchEvent(new Event('beforeunload'));
-    expect(tracker.get().errors.length).toBe(0);
-  });
-});
-
-describe('tracker configuration', () => {
-  it('default max number of actions ', () => {
-    const tracker = createTracker({ ...config, numberOfActions: 20 });
-    for (let i = 0; i < 30; i++) {
-      tracker.action(i.toString(), 'UI');
-      expect(tracker.get().actions.length).toBe(i + 1);
-    }
-    tracker.error(new Error('test'), 'test');
-    const a = tracker.get().errors[0].actions;
-    if (a) expect(a.length).toBe(20);
+    expect(mockFn.mock.calls.length).toBe(6);
   });
 });
 
 describe('tracker features', () => {
-  let tracker;
+  let tracker: Tracker;
   beforeEach(() => {
     tracker = createTracker(config);
   });
 
   it('init', () => {
-    expect(tracker.get().actions).toEqual([]);
-    expect(tracker.get().errors).toEqual([]);
+    expect(tracker.get()).toEqual([]);
   });
 
   it('actions', () => {
     tracker.action('test log', 'UI');
-    expect(tracker.get().actions.length).toBe(1);
+    expect(tracker.get().length).toBe(1);
     tracker.action('test log', 'Network', { test: 'test' });
-    expect(tracker.get().actions.length).toBe(2);
+    expect(tracker.get().length).toBe(2);
   });
 
   it('error with no tags', () => {
     tracker.action('test crumb', 'UI');
-    expect(tracker.get().actions.length).toBe(1);
+    expect(tracker.get().length).toBe(1);
     const error = new Error('test');
-    tracker.error(error);
-    expect(tracker.get().actions.length).toBe(1);
-    expect(tracker.get().errors.length).toBe(1);
+    tracker.error(error, 'test');
+    expect(tracker.get().length).toBe(1);
   });
 
   it('error with tags crumbs and metadata', () => {
     tracker.action('test crumb', 'UI');
-    expect(tracker.get().actions.length).toBe(1);
+    expect(tracker.get().length).toBe(1);
     const error = new Error('test');
     tracker.error(error, 'UI');
-    expect(tracker.get().actions.length).toBe(1);
-    expect(tracker.get().errors.length).toBe(1);
-    expect(tracker.get().errors[0].actions.length).toBe(1);
-    tracker.error(error, 'UI', { name: 'test' });
-    expect(tracker.get().errors.length).toBe(2);
-    expect(tracker.get().errors[0].metadata.name).toBe('test');
+    expect(tracker.get().length).toBe(1);
+    tracker.error(error, 'UI');
+    expect(mockFn.mock.calls.length).toBe(9);
   });
 
   it('error without tags and crumbs', () => {
-    expect(tracker.get().actions.length).toBe(0);
-    expect(tracker.get().errors.length).toBe(0);
+    expect(mockFn.mock.calls.length).toBe(9);
     const error = new Error('test');
-    tracker.error(error);
-    expect(tracker.get().actions.length).toBe(0);
-    expect(tracker.get().errors.length).toBe(1);
-  });
-
-  it('clear actions', () => {
-    const error = new Error('test');
-    tracker.error(error, ['UI']);
-    expect(tracker.get().errors.length).toBe(1);
-    tracker.clear();
-    expect(tracker.get().errors.length).toBe(0);
+    tracker.error(error, 'test');
+    expect(mockFn.mock.calls.length).toBe(10);
   });
 });
 

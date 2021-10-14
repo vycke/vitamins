@@ -16,7 +16,7 @@ You create a system tracker object by using the `tracker` function for the packa
 
 ```js
 import { tracker } from 'vitamins';
-const myTracker = tracker(options, init?);
+const myTracker = tracker(options);
 myTracker.action('my action message', 'test');
 ```
 
@@ -25,8 +25,7 @@ the `options` is an object that can have the following attributes. From these at
 - `namespace: string`: your application name. Will be attached to errors as `metadata`;
 - `version: string`: your application version number. Will be attached to errors as `metadata`;
 - `debug: boolean`: when this is `true`, every action is also printed to the `console.log` for easy debugging;
-- `numberOfActions?: number`: the maximum number of action nodes attached to an error. Default is 10;
-- `onError(errors, actions)?: function`: a function that is executed on every change in the errors.
+- `onError(error)?: function`: a function that is executed on every change in the errors.
 
 Optionally, you can provide initial logs and errors as well. This can be useful when you store them in the `localStorage` and you want to load them in memory on start. This is an object of the structure `{ errors, actions }`.
 
@@ -35,9 +34,8 @@ Optionally, you can provide initial logs and errors as well. This can be useful 
 When initialized, the `tracker` function gives back an object with the following properties:
 
 - `action(message: string, tag: string, metadata?: any)`: stores a new action node in memory;
-- `error(error: Error, tag: string, metadata?: any)`: creates and stores an error node in memory. Optionally, you can add an array of tags. Some example tags are: 'request', '404', '503' etc.;
-- `clear()`: removes the entire log (actions and errors) from memory;
-- `get()`: gives back an object (`{ actions, errors }`) with the current logs from memory.
+- `error(error: Error, tag: string)`: creates and stores an error node in memory. Optionally, you can add an array of tags. Some example tags are: 'request', '404', '503' etc.;
+- `get()`: gives back an array of all stored actions of the current session with the current logs from memory.
 
 By default, the `tracker` function captures and logs all `error` and `unhandledrejection` events on `window` level.
 
@@ -50,17 +48,19 @@ type ActionNode = {
   tag: string;
   message: string;
   timestamp: string;
-  sessionId?: string;
-  metadata?: any;
 };
 
 type ErrorNode = {
   timestamp: string;
   error: Error;
-  sessionId?: string;
-  tags?: string[];
-  environment?: any;
-  crumbs?: LogNode[];
+  tag: string;
+  sessionId: string;
+  actions: ActionNode[];
+  agent: string;
+  vendor: string;
+  language: string;
+  version: string;
+  location: string;
 };
 ```
 
@@ -123,7 +123,3 @@ Sometimes you will find yourself in a situation where a partical function is bei
 
 - `debounce(func, delay)`: the original function (`func`) is called after the caller has stopped calling the debounced function within a certain period of time (`delay`);
 - `throttle(func, delay)`: the original function (`func`) be called at most once per specified period (`delay`).
-
-### Memory size
-
-The `memorySizeOf()` function calculates the estimated size in bytes of variables and objects for keeping them in memory. It can take any type of value as input and calculates memory for `object`, `string`, `number`, `boolean`.
