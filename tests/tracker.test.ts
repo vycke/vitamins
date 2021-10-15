@@ -2,6 +2,7 @@ import createTracker from '../src/tracker';
 import { Tracker } from '../src/types';
 
 const mockFn = jest.fn((a) => a);
+const meta = { type: 'test' };
 
 const config = {
   version: '1.0',
@@ -33,7 +34,7 @@ declare let ErrorEvent: {
 it('onError callback option', () => {
   const tracker = createTracker(config);
   expect(mockFn.mock.calls.length).toBe(0);
-  tracker.error(new Error('test'), 'test');
+  tracker.error(new Error('test'), meta);
   expect(mockFn.mock.calls.length).toBe(1);
 });
 
@@ -87,7 +88,7 @@ describe('tracker features', () => {
     tracker.action('test crumb', 'UI');
     expect(tracker.get().length).toBe(1);
     const error = new Error('test');
-    tracker.error(error, 'test');
+    tracker.error(error, meta);
     expect(tracker.get().length).toBe(1);
   });
 
@@ -95,16 +96,16 @@ describe('tracker features', () => {
     tracker.action('test crumb', 'UI');
     expect(tracker.get().length).toBe(1);
     const error = new Error('test');
-    tracker.error(error, 'UI');
+    tracker.error(error, meta);
     expect(tracker.get().length).toBe(1);
-    tracker.error(error, 'UI');
+    tracker.error(error, meta);
     expect(mockFn.mock.calls.length).toBe(9);
   });
 
   it('error without tags and crumbs', () => {
     expect(mockFn.mock.calls.length).toBe(9);
     const error = new Error('test');
-    tracker.error(error, 'test');
+    tracker.error(error, meta);
     expect(mockFn.mock.calls.length).toBe(10);
   });
 });
@@ -117,7 +118,7 @@ it('debug mode', () => {
   expect(console.log).toHaveBeenCalledTimes(0);
   myTracker.action('test', 'test');
   expect(console.log).toHaveBeenCalledTimes(1);
-  myTracker.error(new Error('test'), 'test');
+  myTracker.error(new Error('test'), meta);
   expect(console.log).toHaveBeenCalledTimes(2);
   spy.mockRestore();
 });

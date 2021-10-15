@@ -26,7 +26,7 @@ export default function tracker(options: TrackerOptions): Tracker {
   // configurations set once the tracker is initiated
   const sessionId: string = uuid();
   // The actual data of the tracker
-  const _actions: ActionNode[] = [];
+  let _actions: ActionNode[] = [];
 
   // function that creates a new action node
   function addAction(message: string, tag: string, metadata?: O): void {
@@ -36,18 +36,19 @@ export default function tracker(options: TrackerOptions): Tracker {
   }
 
   // function that creates a new error node
-  function addError(error: Error, tag: string): void {
+  function addError(error: Error, metadata: O): void {
     const node: ErrorNode = {
       timestamp: new Date().toISOString(),
       sessionId,
       error: { message: error.message, name: error.name, stack: error.stack },
-      tag,
+      metadata: {
+        ...metadata,
+        location: window.location.href,
+        agent: navigator.userAgent,
+        language: navigator.language,
+        version: options.version,
+      },
       actions: _actions.slice(0, 10),
-      location: window.location.href,
-      agent: navigator.userAgent,
-      vendor: navigator.vendor,
-      language: navigator.language,
-      version: options.version,
     };
 
     if (options.debug) logger('error', node);
@@ -56,18 +57,19 @@ export default function tracker(options: TrackerOptions): Tracker {
 
   // Listeners to window events for capturation errors
   window.addEventListener('error', function (event) {
-    addError(event.error, 'window');
+    addError(event.error, { type: 'window' });
   });
 
   // Listeners to window events for capturation errors
   window.addEventListener('unhandledrejection', function (event) {
     const error = new Error(JSON.stringify(event.reason));
-    addError(error, 'promise');
+    addError(error, { type: 'promise' });
   });
 
   return {
     error: addError,
     action: addAction,
     get: (): ActionNode[] => _actions,
+    clear: () => (_actions = []),
   };
 }

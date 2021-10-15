@@ -1,6 +1,6 @@
 {
   "name": "@crinkles/vitamins",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Error & health tracking, with performance helpers",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",

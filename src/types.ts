@@ -17,18 +17,14 @@ export type ActionNode = {
 export type ErrorNode = {
   timestamp: string;
   error: Error;
-  tag: string;
+  metadata: O;
   sessionId: string;
   actions: ActionNode[];
-  agent: string;
-  vendor: string;
-  language: string;
-  version: string;
-  location: string;
 };
 
 export type Tracker = {
   action(message: string, tag: string, metadata?: O): void;
-  error(error: Error, tag: string): void;
+  error(error: Error, tags: O): void;
   get(): ActionNode[];
+  clear(): void;
 };

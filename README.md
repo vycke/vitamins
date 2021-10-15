@@ -34,8 +34,9 @@ Optionally, you can provide initial logs and errors as well. This can be useful 
 When initialized, the `tracker` function gives back an object with the following properties:
 
 - `action(message: string, tag: string, metadata?: any)`: stores a new action node in memory;
-- `error(error: Error, tag: string)`: creates and stores an error node in memory. Optionally, you can add an array of tags. Some example tags are: 'request', '404', '503' etc.;
+- `error(error: Error, metadata: object)`: creates and stores an error node in memory. Optionally, you can add an array of tags. Some example tags are: 'request', '404', '503' etc.;
 - `get()`: gives back an array of all stored actions of the current session with the current logs from memory.
+- `clear()`: removes all actions from memory.
 
 By default, the `tracker` function captures and logs all `error` and `unhandledrejection` events on `window` level.
 
@@ -53,14 +54,15 @@ type ActionNode = {
 type ErrorNode = {
   timestamp: string;
   error: Error;
-  tag: string;
   sessionId: string;
   actions: ActionNode[];
-  agent: string;
-  vendor: string;
-  language: string;
-  version: string;
-  location: string;
+  metadata: {
+    ...anyObjectYouDefineYourSelf,
+    agent: string;
+    language: string;
+    version: string;
+    location: string;
+  },
 };
 ```
 
